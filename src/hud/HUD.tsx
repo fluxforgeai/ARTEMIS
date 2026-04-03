@@ -12,37 +12,35 @@ function SpeedCard() {
 
 function EarthDistCard() {
   const earthDist = useMissionStore((s) => s.spacecraft.earthDist);
-  return <TelemetryCard label="Distance from Earth" value={earthDist} unit="km" color="#00d4ff" />;
+  return <TelemetryCard label="Earth" value={earthDist} unit="km" color="#00d4ff" />;
 }
 
 function MoonDistCard() {
   const moonDist = useMissionStore((s) => s.spacecraft.moonDist);
-  return <TelemetryCard label="Distance to Moon" value={moonDist ?? 0} unit="km" color="#aaaaaa" />;
+  return <TelemetryCard label="Moon" value={moonDist ?? 0} unit="km" color="#aaaaaa" />;
 }
 
 export default function HUD() {
   return (
-    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 z-10">
+    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-2 sm:p-4 z-10">
       {/* Top bar */}
       <div className="flex items-center justify-between pointer-events-auto">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold tracking-widest text-white">
-            ARTEMIS <span className="text-hud-blue">II</span>
-          </h1>
-        </div>
+        <h1 className="text-base sm:text-xl font-bold tracking-widest text-white">
+          ARTEMIS <span className="text-hud-blue">II</span>
+        </h1>
         <MissionClock />
       </div>
 
       {/* Bottom section */}
-      <div className="flex flex-col gap-3">
-        {/* DSN + Camera controls */}
-        <div className="flex items-center justify-between pointer-events-auto">
+      <div className="flex flex-col gap-2 sm:gap-3">
+        {/* DSN + Camera controls — stack on mobile */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pointer-events-auto">
           <DSNStatus />
           <CameraControls />
         </div>
 
-        {/* Telemetry cards — each subscribes to its own scalar */}
-        <div className="flex items-center gap-3 pointer-events-auto flex-wrap">
+        {/* Telemetry cards — grid on mobile, flex on desktop */}
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 pointer-events-auto">
           <SpeedCard />
           <EarthDistCard />
           <MoonDistCard />

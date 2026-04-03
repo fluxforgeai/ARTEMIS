@@ -1,29 +1,49 @@
+import { useMemo } from 'react';
 import { useTexture, Html } from '@react-three/drei';
 import { useMissionStore } from '../store/mission-store';
 import { SCALE_FACTOR } from '../data/mission-config';
 
 export default function Moon() {
   const texture = useTexture('/textures/moon.jpg');
-  const moonPosition = useMissionStore((s) => s.moonPosition);
+  const oemData = useMissionStore((s) => s.oemData);
 
-  const pos: [number, number, number] = moonPosition
-    ? [moonPosition.x / SCALE_FACTOR, moonPosition.y / SCALE_FACTOR, moonPosition.z / SCALE_FACTOR]
-    : [38.44, 0, 0];
+  // Position the Moon at the trajectory's furthest point from Earth (flyby location)
+  // This ensures the Moon aligns with the turnaround point in the trajectory
+  const flybyPos = useMemo((): [number, number, number] => {
+    if (!oemData || oemData.length === 0) return [38.44, 0, 0];
+
+    // Find the point of maximum distance from Earth (the lunar flyby)
+    let maxDist = 0;
+    let flybyVector = oemData[0];
+    for (const v of oemData) {
+      const dist = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+      if (dist > maxDist) {
+        maxDist = dist;
+        flybyVector = v;
+      }
+    }
+
+    // Place Moon at the flyby point (it was approximately here during closest approach)
+    return [
+      flybyVector.x / SCALE_FACTOR,
+      flybyVector.y / SCALE_FACTOR,
+      flybyVector.z / SCALE_FACTOR,
+    ];
+  }, [oemData]);
 
   return (
-    <group position={pos}>
-      {/* Moon sphere — slightly enlarged for visibility (real scale 0.1737) */}
+    <group position={flybyPos}>
       <mesh>
-        <sphereGeometry args={[0.4, 32, 32]} />
+        <sphereGeometry args={[0.5, 32, 32]} />
         <meshStandardMaterial map={texture} />
       </mesh>
       {/* Subtle glow */}
       <mesh>
-        <sphereGeometry args={[0.55, 16, 16]} />
+        <sphereGeometry args={[0.65, 16, 16]} />
         <meshBasicMaterial color="#aaaaaa" transparent opacity={0.06} />
       </mesh>
       <Html
-        position={[0, 0.8, 0]}
+        position={[0, 0.9, 0]}
         center
         zIndexRange={[0, 0]}
         style={{ pointerEvents: 'none' }}
