@@ -1,0 +1,61 @@
+name: Wrought PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Wrought Code Review
+        id: review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are a code reviewer for the ARTEMIS project — an interactive 3D Artemis II mission tracker.
+
+            PR #${{ github.event.pull_request.number }}: "${{ github.event.pull_request.title }}"
+            Author: ${{ github.event.pull_request.user.login }}
+
+            ## Instructions
+
+            1. Run `gh pr diff ${{ github.event.pull_request.number }}` to get the full diff
+            2. Read ARCHITECTURE.md for project context and design decisions
+            3. Review the changes across these dimensions:
+
+            **Critical (block merge)**:
+            - Bugs or logic errors
+            - Security issues (XSS, injection, exposed secrets)
+            - Performance regressions in the 60fps render loop (allocations in useFrame, Zustand re-render storms)
+            - Breaking changes to the data pipeline (OEM parser, interpolator, API proxies)
+
+            **Warning (should fix)**:
+            - Missing error handling at system boundaries (API calls, data parsing)
+            - Incorrect coordinate math or unit conversions
+            - React hook violations (rules of hooks, stale closures, missing deps)
+
+            **Suggestion (nice to have)**:
+            - Code clarity improvements
+            - Better TypeScript types
+            - Test coverage gaps
+
+            4. For each finding, post an inline comment on the specific line using the inline comment tool
+            5. Post a summary comment on the PR with the overall assessment:
+               - If 0 critical: "LGTM — no critical issues. Safe to merge."
+               - If criticals found: "BLOCKED — {N} critical issues must be resolved before merge."
+               - List all findings grouped by severity
+
+            Be concise. Focus on real issues, not style preferences.
+          claude_args: |
+            --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),mcp__github_inline_comment__create_inline_comment"
