@@ -1,23 +1,31 @@
+import { memo } from 'react';
+import DOMPurify from 'dompurify';
 import type { ChatMessage as ChatMessageType, ChatPart } from '../hooks/useChat';
 import ChatImage from './ChatImage';
 import ChatChart from './ChatChart';
 import ChatVideo from './ChatVideo';
 
-/** Render basic markdown: **bold**, newlines, and numbered/bullet lists */
+const MD_BOLD = /\*\*(.*?)\*\*/g;
+const MD_ITALIC = /\*(.*?)\*/g;
+const MD_OL = /^(\d+)\.\s+/gm;
+const MD_UL = /^[-*]\s+/gm;
+const MD_DOUBLE_NEWLINE = /\n\n/g;
+const MD_NEWLINE = /\n/g;
+
 function renderMarkdown(text: string) {
-  let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-  html = html.replace(/^(\d+)\.\s+/gm, '<li>');
-  html = html.replace(/^[-*]\s+/gm, '<li>');
-  html = html.replace(/\n\n/g, '<br/><br/>');
-  html = html.replace(/\n/g, '<br/>');
-  return html;
+  return text
+    .replace(MD_BOLD, '<strong>$1</strong>')
+    .replace(MD_ITALIC, '<em>$1</em>')
+    .replace(MD_OL, '<li>')
+    .replace(MD_UL, '<li>')
+    .replace(MD_DOUBLE_NEWLINE, '<br/><br/>')
+    .replace(MD_NEWLINE, '<br/>');
 }
 
 function renderPart(part: ChatPart, index: number) {
   switch (part.type) {
     case 'text':
-      return <span key={index} dangerouslySetInnerHTML={{ __html: renderMarkdown(part.content) }} />;
+      return <span key={index} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderMarkdown(part.content)) }} />;
     case 'image':
     case 'nasa-image':
       return <ChatImage key={index} part={part} />;
@@ -32,7 +40,7 @@ interface Props {
   message: ChatMessageType;
 }
 
-export default function ChatMessage({ message }: Props) {
+function ChatMessage({ message }: Props) {
   const isUser = message.role === 'user';
 
   return (
@@ -49,12 +57,14 @@ export default function ChatMessage({ message }: Props) {
         ) : message.parts ? (
           message.parts.map(renderPart)
         ) : (
-          <span dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />
+          <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderMarkdown(message.text)) }} />
         )}
       </div>
     </div>
   );
 }
+
+export default memo(ChatMessage);
 
 export function TypingIndicator() {
   return (

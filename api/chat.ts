@@ -6,12 +6,17 @@ const LAUNCH_EPOCH_MS = Date.UTC(2026, 3, 1, 22, 35, 0); // April 1, 2026 22:35 
 
 type Intent = 'text' | 'image' | 'nasa-image' | 'chart' | 'video';
 
+const VIDEO_RE = /video|watch|footage|clip|stream/;
+const CHART_RE = /chart|graph|plot|altitude over|velocity over|speed over|distance over/;
+const NASA_IMAGE_RE = /real photo|actual photo|nasa photo|crew photo|launch photo|official photo/;
+const IMAGE_RE = /show me|picture|image|draw|diagram|illustrat|visual|what does.*look/;
+
 function detectIntent(text: string): Intent {
   const lower = text.toLowerCase();
-  if (/video|watch|footage|clip|stream/.test(lower)) return 'video';
-  if (/chart|graph|plot|altitude over|velocity over|speed over|distance over/.test(lower)) return 'chart';
-  if (/real photo|actual photo|nasa photo|crew photo|launch photo|official photo/.test(lower)) return 'nasa-image';
-  if (/show me|picture|image|draw|diagram|illustrat|visual|what does.*look/.test(lower)) return 'image';
+  if (VIDEO_RE.test(lower)) return 'video';
+  if (CHART_RE.test(lower)) return 'chart';
+  if (NASA_IMAGE_RE.test(lower)) return 'nasa-image';
+  if (IMAGE_RE.test(lower)) return 'image';
   return 'text';
 }
 
@@ -29,10 +34,8 @@ const CURATED_VIDEOS: Array<{ keywords: string[]; videoId: string; title: string
 
 function findCuratedVideo(query: string): { videoId: string; title: string } | null {
   const lower = query.toLowerCase();
-  for (const v of CURATED_VIDEOS) {
-    if (v.keywords.some((k) => lower.includes(k))) return { videoId: v.videoId, title: v.title };
-  }
-  return null;
+  const match = CURATED_VIDEOS.find((v) => v.keywords.some((k) => lower.includes(k)));
+  return match ? { videoId: match.videoId, title: match.title } : null;
 }
 
 // --- System Prompt ---
@@ -103,10 +106,14 @@ CURRENT DATE/TIME CONTEXT (use this to answer time-sensitive questions):
 
 // --- Content Source Helpers ---
 
-interface ChatPart {
-  type: string;
-  [key: string]: unknown;
-}
+type ChatPart =
+  | { type: 'text'; content: string }
+  | { type: 'image'; data: string; mimeType: string; alt?: string }
+  | { type: 'nasa-image'; url: string; title: string; credit: string }
+  | { type: 'chart'; chartType: 'altitude' | 'velocity' | 'earth-distance'; title: string }
+  | { type: 'video'; videoId: string; title: string };
+
+const VALID_ROLES = new Set(['user', 'model']);
 
 const GEMINI_TEXT_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 const GEMINI_IMAGE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-image-generation:generateContent';
@@ -120,9 +127,9 @@ async function generateTextResponse(messages: Array<{ role: string; text: string
     })),
     generationConfig: { temperature: 0.7, maxOutputTokens: 500, topP: 0.9 },
   };
-  const response = await fetch(`${GEMINI_TEXT_URL}?key=${apiKey}`, {
+  const response = await fetch(GEMINI_TEXT_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify(geminiBody),
   });
   if (!response.ok) throw new Error(`Gemini text API ${response.status}`);
@@ -140,9 +147,9 @@ async function generateImage(prompt: string, apiKey: string): Promise<ChatPart[]
       maxOutputTokens: 1000,
     },
   };
-  const res = await fetch(`${GEMINI_IMAGE_URL}?key=${apiKey}`, {
+  const res = await fetch(GEMINI_IMAGE_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -150,11 +157,12 @@ async function generateImage(prompt: string, apiKey: string): Promise<ChatPart[]
     return [{ type: 'text', content: 'I was unable to generate an image for that request. Try asking a text question instead.' }];
   }
   const data = await res.json();
-  const parts: ChatPart[] = [];
-  for (const part of data.candidates?.[0]?.content?.parts ?? []) {
-    if (part.text) parts.push({ type: 'text', content: part.text });
-    if (part.inlineData) parts.push({ type: 'image', data: part.inlineData.data, mimeType: part.inlineData.mimeType });
-  }
+  const parts: ChatPart[] = (data.candidates?.[0]?.content?.parts ?? []).flatMap((part: { text?: string; inlineData?: { data: string; mimeType: string } }) => {
+    const result: ChatPart[] = [];
+    if (part.text) result.push({ type: 'text', content: part.text });
+    if (part.inlineData) result.push({ type: 'image', data: part.inlineData.data, mimeType: part.inlineData.mimeType });
+    return result;
+  });
   return parts.length > 0 ? parts : [{ type: 'text', content: 'I could not generate an image for that request.' }];
 }
 
@@ -179,10 +187,11 @@ async function searchNasaImages(query: string): Promise<ChatPart[]> {
 
 function buildChartParts(text: string): ChatPart[] {
   const lower = text.toLowerCase();
-  let chartType: string = 'earth-distance';
-  let title = 'Distance from Earth Over Time';
-  if (/velocity|speed/.test(lower)) { chartType = 'velocity'; title = 'Spacecraft Velocity Over Time'; }
-  if (/altitude|height/.test(lower)) { chartType = 'earth-distance'; title = 'Altitude (Distance from Earth) Over Time'; }
+  const { chartType, title } = /altitude|height/.test(lower)
+    ? { chartType: 'earth-distance' as const, title: 'Altitude (Distance from Earth) Over Time' }
+    : /velocity|speed/.test(lower)
+      ? { chartType: 'velocity' as const, title: 'Spacecraft Velocity Over Time' }
+      : { chartType: 'earth-distance' as const, title: 'Distance from Earth Over Time' };
   return [
     { type: 'text', content: `Here's the ${title.toLowerCase()} chart based on live NASA trajectory data:` },
     { type: 'chart', chartType, title },
@@ -220,7 +229,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'messages array required' });
   }
 
-  const lastUserMessage = messages[messages.length - 1]?.text ?? '';
+  const sanitizedMessages = messages
+    .slice(-20)
+    .filter((m) => typeof m.text === 'string' && typeof m.role === 'string' && VALID_ROLES.has(m.role))
+    .map((m) => ({ role: m.role, text: m.text.slice(0, 2000) }));
+
+  if (sanitizedMessages.length === 0) {
+    return res.status(400).json({ error: 'No valid messages provided' });
+  }
+
+  const lastUserMessage = sanitizedMessages[sanitizedMessages.length - 1]?.text ?? '';
   const intent = detectIntent(lastUserMessage);
 
   try {
@@ -241,7 +259,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         break;
       case 'text':
       default:
-        parts = await generateTextResponse(messages, buildSystemPrompt(userTimezone), apiKey);
+        parts = await generateTextResponse(sanitizedMessages, buildSystemPrompt(userTimezone), apiKey);
         break;
     }
 
