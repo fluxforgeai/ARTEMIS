@@ -7,12 +7,13 @@ export default function Moon() {
   const texture = useTexture('/textures/moon.jpg');
   const oemData = useMissionStore((s) => s.oemData);
 
-  // Position the Moon at the trajectory's furthest point from Earth (flyby location)
-  // This ensures the Moon aligns with the turnaround point in the trajectory
+  // Position Moon near the flyby point but OFFSET from the trajectory.
+  // The spacecraft flies ~8,900 km above the Moon's surface (~10,637 km from center).
+  // Place Moon further from Earth than the max-distance trajectory point.
   const flybyPos = useMemo((): [number, number, number] => {
     if (!oemData || oemData.length === 0) return [38.44, 0, 0];
 
-    // Find the point of maximum distance from Earth (the lunar flyby)
+    // Find the flyby point (max distance from Earth)
     let maxDist = 0;
     let flybyVector = oemData[0];
     for (const v of oemData) {
@@ -23,12 +24,19 @@ export default function Moon() {
       }
     }
 
-    // Place Moon at the flyby point (it was approximately here during closest approach)
-    return [
-      flybyVector.x / SCALE_FACTOR,
-      flybyVector.y / SCALE_FACTOR,
-      flybyVector.z / SCALE_FACTOR,
-    ];
+    // Direction from Earth to flyby point
+    const dx = flybyVector.x / maxDist;
+    const dy = flybyVector.y / maxDist;
+    const dz = flybyVector.z / maxDist;
+
+    // Offset Moon further from Earth along that direction
+    // ~10,637 km (8,900 surface + 1,737 radius) from spacecraft → Moon center
+    const offsetKm = 10637;
+    const moonX = (flybyVector.x + dx * offsetKm) / SCALE_FACTOR;
+    const moonY = (flybyVector.y + dy * offsetKm) / SCALE_FACTOR;
+    const moonZ = (flybyVector.z + dz * offsetKm) / SCALE_FACTOR;
+
+    return [moonX, moonY, moonZ];
   }, [oemData]);
 
   return (
@@ -37,7 +45,6 @@ export default function Moon() {
         <sphereGeometry args={[0.5, 32, 32]} />
         <meshStandardMaterial map={texture} />
       </mesh>
-      {/* Subtle glow */}
       <mesh>
         <sphereGeometry args={[0.65, 16, 16]} />
         <meshBasicMaterial color="#aaaaaa" transparent opacity={0.06} />
