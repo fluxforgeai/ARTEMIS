@@ -20,7 +20,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     START_TIME: `'${startTime}'`,
     STOP_TIME: `'${stopTime}'`,
     STEP_SIZE: "'1'",
-    VEC_TABLE: "'1'",
+    VEC_TABLE: "'2'",
+    REF_PLANE: "'FRAME'",
   });
 
   try {

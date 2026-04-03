@@ -50,21 +50,16 @@ export function useOEM() {
         const data = await res.json();
 
         if (data.result) {
-          const lines = data.result.split('\n');
-          let inData = false;
-          for (const line of lines) {
-            if (line.trim() === '$$SOE') { inData = true; continue; }
-            if (line.trim() === '$$EOE') break;
-            if (inData) {
-              const parts = line.trim().split(/\s+/);
-              const nums = parts.filter((p: string) => /^-?\d+\./.test(p)).map(Number);
-              if (nums.length >= 3) {
-                useMissionStore.getState().setMoonPosition({
-                  x: nums[0], y: nums[1], z: nums[2],
-                });
-                break;
-              }
-            }
+          // Horizons format: " X = value Y = value Z = value"
+          const posMatch = data.result.match(
+            /X\s*=\s*(-?[\d.]+E[+-]?\d+)\s*Y\s*=\s*(-?[\d.]+E[+-]?\d+)\s*Z\s*=\s*(-?[\d.]+E[+-]?\d+)/
+          );
+          if (posMatch) {
+            useMissionStore.getState().setMoonPosition({
+              x: parseFloat(posMatch[1]),
+              y: parseFloat(posMatch[2]),
+              z: parseFloat(posMatch[3]),
+            });
           }
         }
       } catch (err) {
