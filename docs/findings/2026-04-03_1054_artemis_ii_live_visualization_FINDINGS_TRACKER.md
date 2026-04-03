@@ -16,7 +16,7 @@ Tracking the design and implementation of an interactive, animated Artemis II mi
 
 | # | Finding | Type | Severity | Status | Stage | Report |
 |---|---------|------|----------|--------|-------|--------|
-| F1 | Interactive Artemis II visualization with live NASA data | Gap | **High** | In Progress | Implementing | [Report](2026-04-03_1054_artemis_ii_live_visualization.md) |
+| F1 | Interactive Artemis II visualization with live NASA data | Gap | **High** | In Progress | Reviewed | [Report](2026-04-03_1054_artemis_ii_live_visualization.md) |
 
 **Status legend**: `Open` -> `In Progress` -> `Resolved` -> `Verified`
 **Stage legend**: `Open` -> `Investigating` / `Designing` -> `RCA Complete` / `Blueprint Ready` -> `Planned` -> `Implementing` -> `Reviewed` -> `Resolved` -> `Verified`
@@ -43,13 +43,13 @@ No dependencies mapped yet. Update as relationships between findings are identif
 - [x] **F1.2**: Blueprint + implementation prompt (-> /blueprint -> Stage: Blueprint Ready)
 - [x] **F1.3**: Implementation plan (-> /plan -> Stage: Planned)
 - [x] **F1.4**: Implement changes (Stage: Implementing -> Resolved)
-- [ ] **F1.5**: Code review (-> /forge-review -> Stage: Reviewed)
+- [x] **F1.5**: Code review (-> /forge-review -> Stage: Reviewed)
 - [ ] **F1.6**: Verify implementation (Stage: Verified)
 
 **Recommended approach**: `/design from-scratch` -- this is a new capability with no existing code to migrate from or trade off against.
 
 **Status**: In Progress
-**Stage**: Implementing
+**Stage**: Reviewed
 **Resolved in session**: --
 **Verified in session**: --
 **Notes**: Time-sensitive -- Artemis II mission is on Day 3 of ~10-day flight. ~7 days remain for live tracking relevance.
@@ -64,6 +64,8 @@ No dependencies mapped yet. Update as relationships between findings are identif
 | Blueprint Ready | 2026-04-03 11:17 UTC | 1 | [Blueprint](../blueprints/2026-04-03_1117_artemis_ii_interactive_visualization.md) |
 | Planned | 2026-04-03 13:30 UTC | 1 | [Plan](../plans/2026-04-03_1117_artemis_ii_interactive_visualization.md) |
 | Implementing | 2026-04-03 14:18 UTC | 1 | Build passes, 15/15 tests pass |
+| Reviewed | 2026-04-03 12:23 UTC | 1 | [Review Report](../reviews/2026-04-03_1223_diff.md) — BLOCKED: 5 critical findings |
+| RCA Complete | 2026-04-03 12:35 UTC | 1 | [RCA](../RCAs/2026-04-03_1235_forge_review_critical_fixes.md) — 5 root causes confirmed, fixes defined |
 
 ---
 
@@ -76,6 +78,8 @@ No dependencies mapped yet. Update as relationships between findings are identif
 | 2026-04-03 11:17 UTC | 1 | F1 stage -> Blueprint Ready. Blueprint: docs/blueprints/2026-04-03_1117_artemis_ii_interactive_visualization.md. Prompt: docs/prompts/2026-04-03_1117_artemis_ii_interactive_visualization.md |
 | 2026-04-03 13:30 UTC | 1 | F1 stage -> Planned. Plan: docs/plans/2026-04-03_1117_artemis_ii_interactive_visualization.md |
 | 2026-04-03 14:18 UTC | 1 | F1 stage -> Implementing. /wrought-implement completed in 1 iteration. Build passes, 15/15 tests pass. ~47 files created across 8 phases. |
+| 2026-04-03 12:23 UTC | 1 | F1 stage -> Reviewed. BLOCKED: 5 critical findings. Review: docs/reviews/2026-04-03_1223_diff.md |
+| 2026-04-03 12:35 UTC | 1 | RCA complete. 5 root causes confirmed. RCA: docs/RCAs/2026-04-03_1235_forge_review_critical_fixes.md. Prompt: docs/prompts/2026-04-03_1235_forge_review_critical_fixes.md |
 
 ---
 

@@ -1,20 +1,36 @@
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useMissionStore } from '../store/mission-store';
 import { lagrangeInterpolate } from '../data/interpolator';
-import { SCALE_FACTOR } from '../data/mission-config';
+
+// Shared ref for spacecraft position — Spacecraft.tsx reads this directly
+export const spacecraftPosition = { x: 0, y: 0, z: 0 };
+
+const STORE_UPDATE_INTERVAL = 250; // Throttle store updates to ~4Hz
 
 /**
  * Invisible component that runs inside Canvas to drive spacecraft state.
- * Uses useFrame to interpolate position every render frame.
+ * Interpolates every frame for smooth 3D, but throttles store updates for HUD.
  */
 export default function DataDriver() {
+  const lastStoreUpdate = useRef(0);
+
   useFrame(() => {
     const store = useMissionStore.getState();
     if (!store.oemData || store.oemData.length === 0) return;
 
-    const now = new Date();
+    const now = Date.now();
     const interpolated = lagrangeInterpolate(store.oemData, now);
     if (!interpolated) return;
+
+    // Update shared position ref every frame (for smooth 3D rendering)
+    spacecraftPosition.x = interpolated.x;
+    spacecraftPosition.y = interpolated.y;
+    spacecraftPosition.z = interpolated.z;
+
+    // Throttle Zustand store updates to ~4Hz (triggers HUD re-renders)
+    if (now - lastStoreUpdate.current < STORE_UPDATE_INTERVAL) return;
+    lastStoreUpdate.current = now;
 
     const speed = Math.sqrt(
       interpolated.vx ** 2 + interpolated.vy ** 2 + interpolated.vz ** 2

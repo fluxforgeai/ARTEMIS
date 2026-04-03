@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { findQuickAnswer } from '../data/artemis-knowledge';
 
 export interface ChatMessage {
@@ -9,6 +9,12 @@ export interface ChatMessage {
 export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const messagesRef = useRef<ChatMessage[]>([]);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const sendMessage = useCallback(async (text: string) => {
     const userMsg: ChatMessage = { role: 'user', text };
@@ -22,10 +28,10 @@ export function useChat() {
       return;
     }
 
-    // Fall back to API
+    // Fall back to API — read from ref to get latest messages (avoids stale closure)
     setIsLoading(true);
     try {
-      const allMessages = [...messages, userMsg].map((m) => ({
+      const allMessages = [...messagesRef.current, userMsg].map((m) => ({
         role: m.role,
         text: m.text,
       }));
@@ -43,7 +49,7 @@ export function useChat() {
       const data = await res.json();
       const assistantMsg: ChatMessage = { role: 'assistant', text: data.text };
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch (err) {
+    } catch {
       const errorMsg: ChatMessage = {
         role: 'assistant',
         text: 'Sorry, I could not process your question right now. Please try again or use one of the quick-answer buttons.',
@@ -52,7 +58,7 @@ export function useChat() {
     } finally {
       setIsLoading(false);
     }
-  }, [messages]);
+  }, []); // No messages dependency — reads from ref
 
   const askQuickAnswer = useCallback((question: string) => {
     const answer = findQuickAnswer(question);

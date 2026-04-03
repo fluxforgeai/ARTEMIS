@@ -2,31 +2,35 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { useMissionStore } from '../store/mission-store';
+import { spacecraftPosition } from './DataDriver';
 import { SCALE_FACTOR } from '../data/mission-config';
 
 export default function Spacecraft() {
+  const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
-  const spacecraft = useMissionStore((s) => s.spacecraft);
 
-  const pos: [number, number, number] = [
-    spacecraft.x / SCALE_FACTOR,
-    spacecraft.y / SCALE_FACTOR,
-    spacecraft.z / SCALE_FACTOR,
-  ];
-
-  // Pulsing animation
   useFrame(({ clock }) => {
+    if (!groupRef.current) return;
+
+    // Read position from shared ref (updated every frame by DataDriver)
+    const x = spacecraftPosition.x / SCALE_FACTOR;
+    const y = spacecraftPosition.y / SCALE_FACTOR;
+    const z = spacecraftPosition.z / SCALE_FACTOR;
+
+    // Only show when we have data
+    const hasData = spacecraftPosition.x !== 0 || spacecraftPosition.y !== 0 || spacecraftPosition.z !== 0;
+    groupRef.current.visible = hasData;
+    groupRef.current.position.set(x, y, z);
+
+    // Pulsing animation
     if (meshRef.current) {
       const pulse = 1 + Math.sin(clock.getElapsedTime() * 3) * 0.3;
       meshRef.current.scale.setScalar(pulse);
     }
   });
 
-  const isVisible = spacecraft.earthDist > 0;
-
-  return isVisible ? (
-    <group position={pos}>
+  return (
+    <group ref={groupRef}>
       <mesh ref={meshRef}>
         <sphereGeometry args={[0.15, 16, 16]} />
         <meshBasicMaterial color="#00ff88" toneMapped={false} />
@@ -54,5 +58,5 @@ export default function Spacecraft() {
         </div>
       </Html>
     </group>
-  ) : null;
+  );
 }

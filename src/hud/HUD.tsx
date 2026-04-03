@@ -5,9 +5,22 @@ import ProgressBar from './ProgressBar';
 import DSNStatus from './DSNStatus';
 import CameraControls from './CameraControls';
 
-export default function HUD() {
-  const spacecraft = useMissionStore((s) => s.spacecraft);
+function SpeedCard() {
+  const speed = useMissionStore((s) => s.spacecraft.speed);
+  return <TelemetryCard label="Speed" value={speed} unit="km/h" color="#ff8c00" />;
+}
 
+function EarthDistCard() {
+  const earthDist = useMissionStore((s) => s.spacecraft.earthDist);
+  return <TelemetryCard label="Distance from Earth" value={earthDist} unit="km" color="#00d4ff" />;
+}
+
+function MoonDistCard() {
+  const moonDist = useMissionStore((s) => s.spacecraft.moonDist);
+  return <TelemetryCard label="Distance to Moon" value={moonDist ?? 0} unit="km" color="#aaaaaa" />;
+}
+
+export default function HUD() {
   return (
     <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 z-10">
       {/* Top bar */}
@@ -28,26 +41,11 @@ export default function HUD() {
           <CameraControls />
         </div>
 
-        {/* Telemetry cards */}
+        {/* Telemetry cards — each subscribes to its own scalar */}
         <div className="flex items-center gap-3 pointer-events-auto flex-wrap">
-          <TelemetryCard
-            label="Speed"
-            value={spacecraft.speed}
-            unit="km/h"
-            color="#ff8c00"
-          />
-          <TelemetryCard
-            label="Distance from Earth"
-            value={spacecraft.earthDist}
-            unit="km"
-            color="#00d4ff"
-          />
-          <TelemetryCard
-            label="Distance to Moon"
-            value={spacecraft.moonDist ?? 0}
-            unit="km"
-            color="#aaaaaa"
-          />
+          <SpeedCard />
+          <EarthDistCard />
+          <MoonDistCard />
           <ProgressBar />
         </div>
       </div>

@@ -25,7 +25,7 @@ describe('Lagrange Interpolator', () => {
 
   it('returns exact values at data points', () => {
     for (const v of vectors) {
-      const result = lagrangeInterpolate(vectors, v.epoch);
+      const result = lagrangeInterpolate(vectors, v.epochMs);
       expect(result).not.toBeNull();
       expect(result!.x).toBeCloseTo(v.x, 0);
       expect(result!.y).toBeCloseTo(v.y, 0);
@@ -37,8 +37,8 @@ describe('Lagrange Interpolator', () => {
   });
 
   it('interpolates between data points', () => {
-    const midpoint = new Date(vectors[2].epochMs + 2 * 60 * 1000); // 2 min after point 2
-    const result = lagrangeInterpolate(vectors, midpoint);
+    const midpointMs = vectors[2].epochMs + 2 * 60 * 1000; // 2 min after point 2
+    const result = lagrangeInterpolate(vectors, midpointMs);
     expect(result).not.toBeNull();
     // Should be between vectors[2] and vectors[3]
     expect(result!.x).toBeGreaterThan(Math.min(vectors[2].x, vectors[3].x) - 200);
@@ -47,26 +47,26 @@ describe('Lagrange Interpolator', () => {
 
   it('handles single data point', () => {
     const single = [vectors[0]];
-    const result = lagrangeInterpolate(single, vectors[0].epoch, 0);
+    const result = lagrangeInterpolate(single, vectors[0].epochMs, 0);
     expect(result).not.toBeNull();
     expect(result!.x).toBeCloseTo(vectors[0].x, 3);
   });
 
   it('clamps to range boundaries', () => {
-    const beforeStart = new Date(vectors[0].epochMs - 60000);
-    const result = lagrangeInterpolate(vectors, beforeStart);
+    const beforeStartMs = vectors[0].epochMs - 60000;
+    const result = lagrangeInterpolate(vectors, beforeStartMs);
     expect(result).not.toBeNull();
     expect(result!.x).toBeCloseTo(vectors[0].x, 3);
   });
 
   it('returns null for empty vectors', () => {
-    const result = lagrangeInterpolate([], new Date());
+    const result = lagrangeInterpolate([], Date.now());
     expect(result).toBeNull();
   });
 
   it('handles reduced degree at boundaries', () => {
     const small = vectors.slice(0, 3); // Only 3 points
-    const result = lagrangeInterpolate(small, small[1].epoch, 8);
+    const result = lagrangeInterpolate(small, small[1].epochMs, 8);
     expect(result).not.toBeNull();
     expect(result!.x).toBeCloseTo(small[1].x, 0);
   });
