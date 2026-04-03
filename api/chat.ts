@@ -171,6 +171,7 @@ async function searchNasaImages(query: string): Promise<ChatPart[]> {
   const cleanQuery = query
     .replace(/\b(show|me|find|get|can you|please|real|actual|official|of|the|a|an|some|any)\b/gi, '')
     .replace(/\b(picture|pictures|image|images)\b/gi, 'photo')
+    .replace(/\s+/g, ' ')
     .trim() || 'artemis II';
   const searchQuery = cleanQuery.toLowerCase().includes('artemis') ? cleanQuery : `artemis II ${cleanQuery}`;
   const res = await fetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(searchQuery)}&media_type=image&page_size=3`);
