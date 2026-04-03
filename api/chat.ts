@@ -23,13 +23,13 @@ function detectIntent(text: string): Intent {
 // --- Curated Video Lookup (server-side, avoids importing from src/) ---
 
 const CURATED_VIDEOS: Array<{ keywords: string[]; videoId: string; title: string }> = [
-  { keywords: ['launch', 'liftoff', 'takeoff', 'sls'], videoId: 'nB1PWhXmqFk', title: 'Artemis II Launch' },
-  { keywords: ['tli', 'translunar', 'injection', 'burn'], videoId: 'nB1PWhXmqFk', title: 'Translunar Injection Burn' },
-  { keywords: ['crew', 'astronaut', 'wiseman', 'glover', 'koch', 'hansen'], videoId: 'dOxDfn2re0o', title: 'Meet the Artemis II Crew' },
-  { keywords: ['moon', 'lunar', 'flyby'], videoId: 'nB1PWhXmqFk', title: 'Artemis II Lunar Flyby' },
-  { keywords: ['orion', 'spacecraft'], videoId: 'dOxDfn2re0o', title: 'Inside the Orion Spacecraft' },
-  { keywords: ['splashdown', 'return', 'reentry'], videoId: 'nB1PWhXmqFk', title: 'Artemis II Splashdown' },
-  { keywords: ['artemis', 'program', 'overview', 'mission'], videoId: 'nB1PWhXmqFk', title: 'NASA Artemis II Mission Overview' },
+  { keywords: ['launch', 'liftoff', 'takeoff', 'sls'], videoId: '_eeZQw9PBc0', title: 'Artemis II Launches Astronauts to the Moon (Official NASA Recap)' },
+  { keywords: ['tli', 'translunar', 'injection', 'burn'], videoId: 'Ke6XX8FHOHM', title: 'Artemis II to the Moon: Launch to Splashdown (Mission Animation)' },
+  { keywords: ['crew', 'astronaut', 'wiseman', 'glover', 'koch', 'hansen'], videoId: 'lPyl6d2FJGw', title: 'Meet the Astronauts Who will Fly Around the Moon' },
+  { keywords: ['moon', 'lunar', 'flyby'], videoId: '6RwfNBtepa4', title: "NASA's Artemis II Live Views from Orion" },
+  { keywords: ['orion', 'spacecraft'], videoId: '0uWzj4AiiZ8', title: "Artemis II Astronauts' First Look at Their Lunar Spacecraft" },
+  { keywords: ['splashdown', 'return', 'reentry'], videoId: 'Vg-EQ7MOu6I', title: 'Around the Moon for All Humanity: Artemis II (Official Launch Trailer)' },
+  { keywords: ['artemis', 'program', 'overview', 'mission'], videoId: '7XzhtWcepos', title: 'Artemis II: Mission Overview' },
 ];
 
 function findCuratedVideo(query: string): { videoId: string; title: string } | null {
@@ -125,7 +125,7 @@ async function generateTextResponse(messages: Array<{ role: string; text: string
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.text }],
     })),
-    generationConfig: { temperature: 0.7, maxOutputTokens: 500, topP: 0.9 },
+    generationConfig: { temperature: 0.7, maxOutputTokens: 1024, topP: 0.9 },
   };
   const response = await fetch(GEMINI_TEXT_URL, {
     method: 'POST',
