@@ -16,7 +16,7 @@ export default function DSNStatus() {
       ? station.dishes.some((d) =>
           d.targets.some((t) => {
             const name = t.name.toUpperCase();
-            return name.includes('ORION') || name.includes('ARTEMIS');
+            return name.includes('ORION') || name.includes('ARTEMIS') || name.includes('EM2') || name.includes('EM-2');
           })
         )
       : false;

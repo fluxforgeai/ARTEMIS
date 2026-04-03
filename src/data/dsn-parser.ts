@@ -71,7 +71,7 @@ export function findOrionTarget(stations: DsnStation[]): {
     for (const dish of station.dishes) {
       for (const target of dish.targets) {
         const name = target.name.toUpperCase();
-        if (name.includes('ORION') || name.includes('ARTEMIS')) {
+        if (name.includes('ORION') || name.includes('ARTEMIS') || name.includes('EM2') || name.includes('EM-2')) {
           return { station, dish, target };
         }
       }

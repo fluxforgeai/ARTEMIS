@@ -46,7 +46,7 @@ export function useOEM() {
     async function fetchMoonPosition() {
       try {
         const res = await fetch('/api/horizons', { signal: controller.signal });
-        if (!res.ok) return;
+        if (!res.ok) throw new Error(`Horizons ${res.status}`);
         const data = await res.json();
 
         if (data.result) {
@@ -73,6 +73,9 @@ export function useOEM() {
         useMissionStore.getState().setMoonPosition({ x: 384400, y: 0, z: 0 });
       }
     }
+
+    // Set fallback moon position immediately so moonDist works right away
+    useMissionStore.getState().setMoonPosition({ x: 384400, y: 0, z: 0 });
 
     fetchOEM();
     fetchMoonPosition();
