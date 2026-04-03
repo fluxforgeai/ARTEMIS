@@ -12,6 +12,13 @@
 - IMPLEMENTATION_PLAN.md -- 8-phase build guide
 - docs/findings/2026-04-03_1054_artemis_ii_live_visualization_FINDINGS_TRACKER.md -- F1 tracker (Resolved)
 
+## CI/CD — GitHub Actions
+
+- `.github/workflows/claude-pr-review.yml` -- Automated Wrought code review on every PR (open/sync). Reviews for bugs, security, render loop performance, data pipeline correctness. Posts inline comments + summary (LGTM or BLOCKED).
+- `.github/workflows/claude-interactive.yml` -- Responds to `@claude` mentions in issues, PR comments, and reviews.
+- **Branch protection** on `master`: PRs required, `review` status check must pass, strict mode (branch must be up-to-date).
+- **Secret**: `ANTHROPIC_API_KEY` set as repo secret for CI authentication.
+
 ## The Wrought Way of Work
 
 Wrought enforces structured engineering pipelines:
@@ -66,5 +73,5 @@ session_docs: []
 
 ---
 
-**Last Updated**: 2026-04-03
-**Last Session**: Session 2 -- Verified F1, fixed OEM API 502 (F2), added dynamic OEM discovery (F3), rewrote camera presets, added multimodal chatbot (Gemini Image + NASA Photos + Recharts + YouTube), fixed chatbot datetime. 1 Critical XSS open (Security F1).
+**Last Updated**: 2026-04-04
+**Last Session**: Session 2 -- Verified F1, fixed OEM API 502 (F2), added dynamic OEM discovery (F3), rewrote camera presets, added multimodal chatbot (Gemini Image + NASA Photos + Recharts + YouTube), fixed chatbot datetime. 1 Critical XSS open (Security F1). Added GitHub Actions CI (Wrought PR review + @claude interactive). Branch protection on master.
