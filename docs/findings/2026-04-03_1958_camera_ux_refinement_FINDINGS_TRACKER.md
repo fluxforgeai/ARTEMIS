@@ -3,7 +3,7 @@
 # Camera & UX Refinement -- Findings Tracker
 
 **Created**: 2026-04-03 19:58 UTC
-**Last Updated**: 2026-04-03 20:24 UTC
+**Last Updated**: 2026-04-03 20:44 UTC
 **Origin**: Session 2 review of camera presets identified in Session 1 handoff as needing refinement
 **Session**: 2
 **Scope**: Camera preset positions, viewing angles, and visual presentation for the Artemis II mission tracker
@@ -17,7 +17,7 @@ Tracking camera preset and UX refinements for the ARTEMIS interactive mission vi
 | # | Finding | Type | Severity | Status | Stage | Report |
 |---|---------|------|----------|--------|-------|--------|
 | F1 | Camera presets need refinement for optimal viewing angles | Gap | **Medium** | Resolved | Resolved | [Report](2026-04-03_1958_camera_preset_refinement.md) |
-| F2 | Three camera bugs: debug overlay broken, vertical orientation, blocked clicks | Defect | **Medium** | In Progress | RCA Complete | [Report](2026-04-03_2021_camera_visual_bugs.md) |
+| F2 | Three camera bugs: debug overlay broken, vertical orientation, blocked clicks | Defect | **Medium** | Resolved | Resolved | [Report](2026-04-03_2021_camera_visual_bugs.md) |
 
 **Status legend**: `Open` -> `In Progress` -> `Resolved` -> `Verified`
 **Stage legend**: `Open` -> `Investigating` / `Designing` -> `RCA Complete` / `Blueprint Ready` -> `Planned` -> `Implementing` -> `Reviewed` -> `Resolved` -> `Verified`
@@ -77,16 +77,16 @@ No dependencies mapped yet. Update as relationships between findings are identif
 **Resolution tasks**:
 
 - [x] **F2.1**: RCA + fix design — root causes are already clear from code inspection (-> /rca-bugfix -> Stage: RCA Complete)
-- [ ] **F2.2**: Implementation plan (-> /plan -> Stage: Planned)
-- [ ] **F2.3**: Implement fix (Stage: Implementing -> Resolved)
-- [ ] **F2.4**: Code review (-> /forge-review -> Stage: Reviewed)
+- [x] **F2.2**: Implementation plan (-> /plan -> Stage: Planned)
+- [x] **F2.3**: Implement fix (Stage: Implementing -> Resolved)
+- [x] **F2.4**: Code review (-> /forge-review -> Stage: Reviewed)
 - [ ] **F2.5**: Verify fix on deployment (Stage: Verified)
 
 **Recommended approach**: `/rca-bugfix` — root causes are already identified from code inspection.
 
-**Status**: In Progress
-**Stage**: RCA Complete
-**Resolved in session**: --
+**Status**: Resolved
+**Stage**: Resolved
+**Resolved in session**: 2
 **Verified in session**: --
 **Notes**: All three bugs are in CameraDebug.tsx and CameraController.tsx. Root causes confirmed.
 **GitHub Issue**: --
@@ -97,6 +97,8 @@ No dependencies mapped yet. Update as relationships between findings are identif
 |-------|-----------|---------|----------|
 | Open | 2026-04-03 20:21 UTC | 2 | [Finding Report](2026-04-03_2021_camera_visual_bugs.md) |
 | RCA Complete | 2026-04-03 20:24 UTC | 2 | [RCA](../RCAs/2026-04-03_2024_camera_visual_bugs.md) — 3 root causes confirmed, fixes defined |
+| Resolved | 2026-04-03 20:43 UTC | 2 | /wrought-rca-fix iteration 2: rewrote CameraDebug with direct DOM, all presets use full-trajectory bounding box distance. Build passes, 15/15 tests pass. |
+| Reviewed | 2026-04-03 20:44 UTC | 2 | [Review](../reviews/2026-04-03_2044_diff.md) — 0 criticals, 3 warnings, 5 suggestions |
 
 ---
 
@@ -109,6 +111,9 @@ No dependencies mapped yet. Update as relationships between findings are identif
 | 2026-04-03 20:04 UTC | 2 | F1 stage -> Blueprint Ready. Blueprint: docs/blueprints/2026-04-03_2004_camera_preset_strategies.md. Prompt: docs/prompts/2026-04-03_2004_camera_preset_strategies.md |
 | 2026-04-03 20:08 UTC | 2 | F1 stage -> Resolved. /wrought-implement completed in 1 iteration. Velocity-aligned chase cam, Earth-centric tracking, orbital-normal Moon view. Build passes, 15/15 tests pass. |
 | 2026-04-03 20:21 UTC | 2 | F2 logged from visual verification. 3 bugs: debug overlay broken, vertical orientation, blocked clicks (Medium Defect). |
+| 2026-04-03 20:24 UTC | 2 | F2 stage -> RCA Complete. 3 root causes confirmed. |
+| 2026-04-03 20:43 UTC | 2 | F2 stage -> Resolved. /wrought-rca-fix iteration 2. CameraDebug rewritten with direct DOM. All presets use full-trajectory bounding box. |
+| 2026-04-03 20:44 UTC | 2 | F2 -> Reviewed. /forge-review: 0 criticals, 3 warnings, 5 suggestions. |
 
 ---
 
@@ -121,3 +126,5 @@ No dependencies mapped yet. Update as relationships between findings are identif
 | src/hud/CameraControls.tsx | Preset button UI |
 | src/components/CameraDebug.tsx | D-key debug overlay |
 | docs/findings/2026-04-03_2021_camera_visual_bugs.md | F2 finding report |
+| docs/RCAs/2026-04-03_2024_camera_visual_bugs.md | F2 RCA |
+| docs/reviews/2026-04-03_2044_diff.md | F2 code review (0C/3W/5S) |
