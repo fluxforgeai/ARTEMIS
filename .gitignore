@@ -24,3 +24,5 @@ NEXT_SESSION_PROMPT_*.md
 
 # Wrought loop state
 .claude/wrought-loop-state.json
+.vercel
+.DS_Store

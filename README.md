@@ -1,26 +1,66 @@
 # ARTEMIS -- Artemis II Interactive Mission Tracker
 
-A real-time, interactive 3D visualization of NASA's Artemis II lunar flyby mission, featuring live telemetry, an AI-powered mission chatbot, and Deep Space Network status -- all running in your browser.
+A real-time, interactive 3D visualization of NASA's Artemis II lunar flyby mission, featuring live telemetry from NASA data feeds, an AI-powered mission chatbot, and Deep Space Network status -- all running in your browser.
 
-**Live site**: [artemis.vercel.app](https://artemis.vercel.app) (Vercel deployment)
+**Live**: [artemis-tracker-murex.vercel.app](https://artemis-tracker-murex.vercel.app)
+**Repo**: [github.com/fluxforgeai/ARTEMIS](https://github.com/fluxforgeai/ARTEMIS)
 
 ---
 
-![ARTEMIS Screenshot](docs/screenshots/Screenshot%202026-04-03%20at%2012.58.32.png)
+## What We Built
 
-*Reference screenshot showing mission telemetry overlay. The live application features a fully interactive 3D scene with free camera controls.*
+Artemis II launched on April 1, 2026 -- humanity's first crewed voyage beyond low Earth orbit since Apollo 17 in 1972. NASA does not provide a unified real-time telemetry API for the mission. Instead, spacecraft data is scattered across OEM ephemeris files, XML feeds, and on-demand ephemeris services.
+
+ARTEMIS solves this by combining three NASA data sources into a single interactive 3D visualization: OEM trajectory files (parsed and interpolated with degree-8 Lagrange polynomials), the Deep Space Network's real-time XML feed, and JPL Horizons for lunar positioning. The result is an accurate, visually engaging mission tracker that anyone can explore in their browser.
+
+The entire project -- from first line of code to production deployment -- was built in a single session using Claude Code with the Wrought structured engineering pipeline.
+
+---
+
+## Screenshots
+
+### Plan View (Default)
+
+The app opens with a top-down plan view computed from the trajectory's orbital plane, showing the full free-return path from Earth to the Moon and back.
+
+![Plan View](docs/screenshots/one_shotted_first_view.png)
+
+### Earth View
+
+Earth centered in the frame with Orion's trajectory arcing away toward the Moon. The orange line shows the path already traveled; the dashed cyan line shows the projected future trajectory.
+
+![Earth View](docs/screenshots/artemis_earth_view.png)
+
+### AI Mission Chatbot
+
+Ask questions about the Artemis II mission. Common questions resolve instantly via quick-answer buttons (client-side, no API call). Free-text questions are answered by Google Gemini 2.5 Flash with a curated mission knowledge base.
+
+![Chatbot](docs/screenshots/artemis_chatbot.png)
+
+### Follow Orion
+
+Camera tracks the Orion spacecraft in real-time, showing its current position along the trajectory with Earth and Moon visible for context.
+
+![Follow Orion](docs/screenshots/first_follow_orion_view.png)
+
+### Inspiration
+
+The project was inspired by the NASASpaceflight YouTube mission overlay, with the goal of making something interactive, more accurate, and more engaging.
+
+![NSF Reference](docs/screenshots/nsf_example.png)
 
 ---
 
 ## Features
 
-- **Interactive 3D Scene** -- Explore a real-time Earth-Moon-Orion scene built with React Three Fiber. Rotate, zoom, and pan freely, or use camera presets (Follow Orion, Earth View, Moon View).
-- **Live Trajectory Data** -- Spacecraft position and velocity interpolated from NASA OEM ephemeris files using degree-8 Lagrange interpolation, updating in real time.
-- **Telemetry HUD** -- Animated readouts for speed (km/h), distance from Earth, distance to Moon, mission elapsed time, and mission progress percentage.
-- **AI Mission Chatbot** -- Ask questions about the Artemis II mission. Powered by Google Gemini 2.5 Flash with a curated knowledge base of mission facts. Common questions resolve instantly via quick-answer buttons.
+- **Interactive 3D Scene** -- Explore a real-time Earth-Moon-Orion scene built with React Three Fiber. Rotate, zoom, and pan freely, or use camera presets (Follow Orion, Earth View, Moon View, Free).
+- **Live Trajectory Data** -- Spacecraft position and velocity interpolated from NASA OEM ephemeris files using degree-8 Lagrange interpolation with binary search (O(log n)) and zero per-frame allocations.
+- **Telemetry HUD** -- Animated readouts for speed (km/h), distance from Earth (km), distance to Moon (km), mission elapsed time, and mission progress percentage. Numbers animate smoothly with spring physics.
+- **AI Mission Chatbot** -- Ask anything about Artemis II. Powered by Google Gemini 2.5 Flash with a curated system prompt of mission facts. 12 quick-answer buttons resolve instantly without an API call.
 - **Deep Space Network Status** -- Live indicators showing which DSN ground stations (Goldstone, Canberra, Madrid) are communicating with Orion.
-- **Space Weather Alerts** -- DONKI integration surfaces active solar flares, CMEs, and radiation storms relevant to the mission.
-- **Cross-Validated Data** -- OEM-interpolated positions are cross-checked against DSN range measurements to ensure accuracy within 5% of NASA AROW official values.
+- **Camera Presets** -- Four views: Follow Orion (tracks the spacecraft), Earth View (top-down plan view), Moon View (centered on the lunar flyby), and Free (user-controlled orbit).
+- **Mobile Responsive** -- Touch controls adapted for mobile: one-finger pan, two-finger rotate/zoom. HUD uses a compact 2-column grid on small screens.
+- **Bundled Fallback Data** -- Includes a real 3,232-line OEM ephemeris file as a fallback, so the app loads instantly even if NASA's servers are slow.
 
 ## Tech Stack
 
@@ -30,160 +70,110 @@ A real-time, interactive 3D visualization of NASA's Artemis II lunar flyby missi
 | UI Framework | React 19 | Component model |
 | Language | TypeScript 5.x | Type safety |
 | 3D Engine | Three.js r170+ | WebGL rendering |
-| 3D React Bindings | @react-three/fiber 9.x | React-Three.js bridge |
-| 3D Helpers | @react-three/drei 9.x | Controls, effects, HTML overlays |
-| Post-Processing | @react-three/postprocessing 3.x | Bloom and glow effects |
-| Animation | Framer Motion 12.x | HUD animations, smooth counters |
-| State Management | Zustand 5.x | Lightweight global state |
-| Styling | Tailwind CSS 4.x | Utility-first HUD styling |
-| AI Chatbot | Google Gemini 2.5 Flash | Mission Q&A (free tier) |
-| Hosting | Vercel | Static SPA + serverless API proxies |
+| 3D React | @react-three/fiber 9.x | React-Three.js bridge |
+| 3D Helpers | @react-three/drei 9.x | OrbitControls, Html overlays, textures |
+| Animation | Framer Motion 12.x | HUD animated counters with spring physics |
+| State | Zustand 5.x | Lightweight global state, frame-safe access |
+| Styling | Tailwind CSS 4.x | Utility-first, CSS-only config (no tailwind.config) |
+| AI Chatbot | Google Gemini 2.5 Flash | Mission Q&A via system prompt (free tier) |
+| Hosting | Vercel | Static SPA + 5 serverless API proxies |
 
 ## Quick Start
 
-### Prerequisites
-
-- Node.js 20+
-- npm 10+
-- A NASA API key (free, from [api.nasa.gov](https://api.nasa.gov/))
-- A Google Gemini API key (free tier, from [Google AI Studio](https://aistudio.google.com/apikey))
-
-### Setup
-
 ```bash
-# Clone the repository
+# Clone
 git clone https://github.com/fluxforgeai/ARTEMIS.git
 cd ARTEMIS
 
-# Install dependencies
-npm install
+# Install (legacy-peer-deps needed for R3F v9 / drei v9 compatibility)
+npm install --legacy-peer-deps
 
-# Configure environment variables
+# Configure API keys
 cp .env.example .env
-```
+# Edit .env: add GEMINI_API_KEY and NASA_API_KEY
 
-Edit `.env` and add your API keys:
-
-```
-NASA_API_KEY=your_nasa_api_key
-GEMINI_API_KEY=your_gemini_api_key
-```
-
-### Development
-
-```bash
+# Run locally
 npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173) in a WebGL2-capable browser.
 
-### Production Build
-
-```bash
-npm run build
-npm run preview
-```
-
 ### Deploy to Vercel
 
 ```bash
-# Install Vercel CLI (if not already installed)
-npm i -g vercel
-
-# Deploy
-vercel
+vercel deploy --prod
+# Then set GEMINI_API_KEY and NASA_API_KEY in Vercel dashboard
 ```
-
-Set `NASA_API_KEY` and `GEMINI_API_KEY` in your Vercel project's environment variables.
 
 ## Data Sources
 
-ARTEMIS consumes four NASA data feeds, proxied through Vercel serverless functions to handle CORS:
-
-| Source | Endpoint | Data Provided | Update Interval |
+| Source | Endpoint | Data | Refresh |
 |---|---|---|---|
-| [CCSDS OEM Ephemeris](https://www.nasa.gov/missions/artemis/artemis-2/track-nasas-artemis-ii-mission-in-real-time/) | `/api/oem` | Spacecraft position and velocity vectors (J2000 frame, 4-min intervals) | 5 minutes |
-| [DSN Now](https://eyes.nasa.gov/apps/dsn-now/) | `/api/dsn` | Real-time Deep Space Network antenna status, signal strength, range | 30 seconds |
-| [JPL Horizons](https://ssd.jpl.nasa.gov/horizons/) | `/api/horizons` | Moon ephemeris for accurate 3D positioning; Artemis II cross-validation | 30 minutes |
-| [DONKI](https://api.nasa.gov/) | `/api/donki` | Space weather events (solar flares, CMEs, radiation storms) | 15 minutes |
+| [AROW OEM](https://www.nasa.gov/missions/artemis/artemis-2/track-nasas-artemis-ii-mission-in-real-time/) | `/api/oem` | Spacecraft state vectors (J2000, 4-min intervals) | 5 min |
+| [DSN Now](https://eyes.nasa.gov/apps/dsn-now/) | `/api/dsn` | Antenna status, signal strength, range | 30 sec |
+| [JPL Horizons](https://ssd.jpl.nasa.gov/horizons/) | `/api/horizons` | Moon position (Earth-centered, J2000) | 30 min |
+| [DONKI](https://api.nasa.gov/) | `/api/donki` | Solar flares, CMEs, radiation storms | 15 min |
+| [Gemini Flash](https://ai.google.dev/) | `/api/chat` | AI chatbot responses | On demand |
 
-## Architecture Overview
-
-The application is a Vite-built React SPA deployed on Vercel with serverless API proxies.
+## Architecture
 
 ```
-Vercel
-+---------------------------------------------+
-|  Serverless API Layer (/api/)               |
-|  OEM | DSN | Horizons | DONKI | Chat        |
-+---------------------------------------------+
-|  Client SPA (React + TypeScript)            |
-|                                             |
-|  +--- 3D Scene (React Three Fiber) ------+  |
-|  |  Earth, Moon, Orion, Trajectory, Stars |  |
-|  +---------------------------------------+  |
-|                                             |
-|  +--- HUD Overlay (React + Framer) ------+  |
-|  |  Telemetry, Clock, DSN, Progress      |  |
-|  +---------------------------------------+  |
-|                                             |
-|  +--- AI Chatbot (Gemini Flash) ---------+  |
-|  |  System prompt + quick answers        |  |
-|  +---------------------------------------+  |
-|                                             |
-|  +--- Data Layer (Zustand + Hooks) ------+  |
-|  |  useOEM, useDSN, useSpacecraft, ...   |  |
-|  +---------------------------------------+  |
-+---------------------------------------------+
+Vercel Deployment
++-----------------------------------------------+
+|  Serverless API (/api/)                       |
+|  oem | dsn | horizons | donki | chat          |
++-----------------------------------------------+
+|  Client SPA                                   |
+|                                               |
+|  3D Scene (React Three Fiber)                 |
+|  Earth | Moon | Orion | Trajectory | Stars    |
+|  DataDriver (frame-loop interpolation)        |
+|  CameraController (presets + orbit controls)  |
+|                                               |
+|  HUD Overlay (React + Framer Motion)          |
+|  Telemetry Cards | Clock | DSN | Progress     |
+|                                               |
+|  AI Chatbot (Gemini Flash)                    |
+|  Quick answers (client) | Free text (API)     |
+|                                               |
+|  Data Layer (Zustand + Hooks)                 |
+|  useOEM | useDSN | useMission | useChat       |
++-----------------------------------------------+
 ```
 
-**Key data flow**: OEM ephemeris files are fetched, parsed, and Lagrange-interpolated (degree 8) on each frame to produce smooth, accurate spacecraft positions. These positions drive both the 3D Orion marker and the HUD telemetry readouts. DSN range measurements independently cross-validate the interpolated data.
-
-For full architectural details, see `ARCHITECTURE.md`.
+For full details see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Testing
 
 ```bash
-# Run unit tests (OEM parser, Lagrange interpolator)
-npm run test
-
-# Type checking
-npx tsc --noEmit
-
-# Build verification
-npm run build
+npm run test      # 15 unit tests (OEM parser + Lagrange interpolator)
+npm run build     # TypeScript type checking + production build
 ```
 
-Accuracy is verified against [NASA AROW](https://www.nasa.gov/trackartemis) -- displayed speed, Earth distance, and Moon distance must be within 5% of official values.
+## How It Was Built
 
-## Contributing
+This project was built in a single session using [Claude Code](https://claude.ai/code) following the Wrought structured engineering pipeline:
 
-Contributions are welcome. To get started:
+1. `/finding` -- Identified the gap (no interactive Artemis II tracker)
+2. `/research` -- Evaluated AI chatbot approaches (system prompt vs RAG)
+3. `/design` -- Compared 4 architecture options, selected Vite + R3F
+4. `/blueprint` -- Created detailed implementation spec (48 files, 8 phases)
+5. `/wrought-implement` -- Autonomous implementation loop (completed in 1 iteration)
+6. `/forge-review` -- Deep 4-agent code review (found 5 critical issues)
+7. `/rca-bugfix` -- Root cause analysis and fix (all 5 resolved in 1 iteration)
 
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/your-feature`).
-3. Commit your changes with clear, descriptive messages.
-4. Open a pull request against `develop`.
-
-Please ensure `npm run build` and `npm run test` pass before submitting.
+All pipeline artifacts are preserved in the `docs/` directory.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[MIT](LICENSE)
 
 ## Credits
 
-**Data and imagery provided by**:
-- [NASA](https://www.nasa.gov/) -- OEM ephemeris files, Blue Marble Earth textures, DONKI space weather data, and the Artemis II mission itself
-- [NASA Jet Propulsion Laboratory (JPL)](https://www.jpl.nasa.gov/) -- Horizons ephemeris system and Deep Space Network Now
-- [European Space Agency (ESA)](https://www.esa.int/) -- European Space Astronomy Centre DSN ground station support
+**Data**: [NASA](https://www.nasa.gov/) (OEM, AROW, Blue Marble), [JPL](https://www.jpl.nasa.gov/) (Horizons, DSN Now), [ESA](https://www.esa.int/) (European Service Module)
 
-**Built with**:
-- [Three.js](https://threejs.org/) and the [React Three Fiber](https://r3f.docs.pmnd.rs/) ecosystem
-- [React](https://react.dev/), [Vite](https://vite.dev/), and [Tailwind CSS](https://tailwindcss.com/)
-- [Vercel](https://vercel.com/) for hosting and serverless functions
-- [Google Gemini](https://ai.google.dev/) for the AI mission chatbot
+**Built with**: [Three.js](https://threejs.org/), [React Three Fiber](https://r3f.docs.pmnd.rs/), [React](https://react.dev/), [Vite](https://vite.dev/), [Tailwind CSS](https://tailwindcss.com/), [Vercel](https://vercel.com/), [Google Gemini](https://ai.google.dev/)
 
 ---
 
-*ARTEMIS is an independent community project and is not affiliated with or endorsed by NASA, JPL, or ESA. All NASA data and imagery used are in the public domain.*
+*ARTEMIS is an independent community project. Not affiliated with or endorsed by NASA, JPL, or ESA. All NASA data and imagery are in the public domain.*
