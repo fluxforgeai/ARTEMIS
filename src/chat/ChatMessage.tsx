@@ -1,5 +1,22 @@
 import type { ChatMessage as ChatMessageType } from '../hooks/useChat';
 
+/** Render basic markdown: **bold**, newlines, and numbered/bullet lists */
+function renderMarkdown(text: string) {
+  // Convert **bold** to <strong>
+  let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Convert *italic* to <em>
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  // Convert numbered lists (e.g. "1. ") at line starts to <li>
+  html = html.replace(/^(\d+)\.\s+/gm, '<li>');
+  // Convert bullet lists (- or *) at line starts to <li>
+  html = html.replace(/^[-*]\s+/gm, '<li>');
+  // Convert double newlines to paragraph breaks
+  html = html.replace(/\n\n/g, '<br/><br/>');
+  // Convert remaining newlines to <br/>
+  html = html.replace(/\n/g, '<br/>');
+  return html;
+}
+
 interface Props {
   message: ChatMessageType;
 }
@@ -16,7 +33,11 @@ export default function ChatMessage({ message }: Props) {
             : 'bg-[rgba(255,255,255,0.05)] text-gray-200 border border-[rgba(255,255,255,0.05)]'
         }`}
       >
-        {message.text}
+        {isUser ? (
+          message.text
+        ) : (
+          <span dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />
+        )}
       </div>
     </div>
   );

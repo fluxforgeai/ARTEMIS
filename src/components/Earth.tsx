@@ -18,16 +18,16 @@ export default function Earth() {
     <group>
       {/* Earth sphere */}
       <mesh ref={meshRef}>
-        <sphereGeometry args={[0.637, 64, 64]} />
-        <meshStandardMaterial map={texture} emissive="#2244aa" emissiveIntensity={0.35} />
+        <sphereGeometry args={[1.274, 64, 64]} />
+        <meshStandardMaterial map={texture} emissive="#4488dd" emissiveIntensity={0.45} />
       </mesh>
       {/* Atmosphere glow */}
       <mesh scale={1.08}>
-        <sphereGeometry args={[0.637, 32, 32]} />
+        <sphereGeometry args={[1.274, 32, 32]} />
         <meshBasicMaterial
-          color="#5599ff"
+          color="#77bbff"
           transparent
-          opacity={0.15}
+          opacity={0.18}
           side={THREE.BackSide}
         />
       </mesh>
