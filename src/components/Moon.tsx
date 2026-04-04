@@ -34,7 +34,6 @@ export default function Moon() {
     return [moonX, moonY, moonZ];
   }, [oemData]);
 
-  // Earth-Moon distance from Moon's scene position (scene units * SCALE_FACTOR = km)
   const earthDistKm = Math.sqrt(flybyPos[0] ** 2 + flybyPos[1] ** 2 + flybyPos[2] ** 2) * SCALE_FACTOR;
 
   useEffect(() => {
@@ -50,8 +49,8 @@ export default function Moon() {
           onPointerOver={() => setHovered(true)}
           onPointerOut={() => setHovered(false)}
         >
-          <planeGeometry args={[1.5, 1.5]} />
-          <meshBasicMaterial map={texture} transparent alphaTest={0.1} toneMapped={false} />
+          <circleGeometry args={[0.75, 64]} />
+          <meshBasicMaterial map={texture} toneMapped={false} />
         </mesh>
       </Billboard>
       <Html
@@ -86,8 +85,8 @@ export default function Moon() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <InfoRow label="Type" value="Natural Satellite" />
               <InfoRow label="Radius" value="1,737 km" />
-              <InfoRow label="Mass" value="7.35 x 10^22 kg" />
-              <InfoRow label="Gravity" value="1.62 m/s^2" />
+              <InfoRow label="Mass" value="7.35 × 10²² kg" />
+              <InfoRow label="Gravity" value="1.62 m/s²" />
               <InfoRow label="Orbital Period" value="27.3 days" />
               <InfoRow label="Earth Distance" value={`${Math.round(earthDistKm).toLocaleString()} km`} color="#00d4ff" />
             </div>

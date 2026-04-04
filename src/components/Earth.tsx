@@ -7,7 +7,6 @@ export default function Earth() {
   const moonPosition = useMissionStore((s) => s.moonPosition);
   const [hovered, setHovered] = useState(false);
 
-  // Compute Earth-Moon distance in km
   const moonDistKm = moonPosition
     ? Math.sqrt(moonPosition.x ** 2 + moonPosition.y ** 2 + moonPosition.z ** 2) * 10000
     : 384400;
@@ -19,8 +18,8 @@ export default function Earth() {
           onPointerOver={() => setHovered(true)}
           onPointerOut={() => setHovered(false)}
         >
-          <planeGeometry args={[3.0, 3.0]} />
-          <meshBasicMaterial map={texture} transparent alphaTest={0.1} toneMapped={false} />
+          <circleGeometry args={[1.5, 64]} />
+          <meshBasicMaterial map={texture} toneMapped={false} />
         </mesh>
       </Billboard>
       {hovered && (
@@ -40,9 +39,9 @@ export default function Earth() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <InfoRow label="Type" value="Rocky Planet" />
               <InfoRow label="Radius" value="6,371 km" />
-              <InfoRow label="Mass" value="5.97 x 10^24 kg" />
-              <InfoRow label="Gravity" value="9.81 m/s^2" />
-              <InfoRow label="Atmosphere" value="N2 / O2" />
+              <InfoRow label="Mass" value="5.97 × 10²⁴ kg" />
+              <InfoRow label="Gravity" value="9.81 m/s²" />
+              <InfoRow label="Atmosphere" value="N₂ / O₂" />
               <InfoRow label="Moon Distance" value={`${Math.round(moonDistKm).toLocaleString()} km`} color="#aaaaaa" />
             </div>
           </div>

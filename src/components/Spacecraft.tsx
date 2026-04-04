@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture, Billboard, Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -23,30 +23,13 @@ const _camUp = new THREE.Vector3();
 export default function Spacecraft() {
   const groupRef = useRef<THREE.Group>(null);
   const spriteRef = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.MeshBasicMaterial>(null);
   const texture = useTexture('/textures/orion.png');
   const [hovered, setHovered] = useState(false);
 
-  // Read telemetry from store for hover card
   const speed = useMissionStore((s) => s.spacecraft.speed);
   const earthDist = useMissionStore((s) => s.spacecraft.earthDist);
   const moonDist = useMissionStore((s) => s.spacecraft.moonDist);
   const { currentPhase } = useMission();
-
-  // Apply brightness-based discard shader to remove dark background
-  useEffect(() => {
-    if (matRef.current) {
-      matRef.current.onBeforeCompile = (shader) => {
-        shader.fragmentShader = shader.fragmentShader.replace(
-          '#include <map_fragment>',
-          `#include <map_fragment>
-           float brightness = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
-           if (brightness < 0.06) discard;`
-        );
-      };
-      matRef.current.needsUpdate = true;
-    }
-  }, []);
 
   useFrame(({ camera }) => {
     if (!groupRef.current) return;
@@ -71,6 +54,7 @@ export default function Spacecraft() {
     }
   });
 
+  // Orion image is 262x229 (roughly 1.14:1 aspect ratio)
   return (
     <group ref={groupRef}>
       <Billboard>
@@ -79,12 +63,17 @@ export default function Spacecraft() {
           onPointerOver={() => setHovered(true)}
           onPointerOut={() => setHovered(false)}
         >
-          <planeGeometry args={[0.8, 0.65]} />
-          <meshBasicMaterial ref={matRef} map={texture} transparent toneMapped={false} />
+          <planeGeometry args={[1.2, 1.05]} />
+          <meshBasicMaterial map={texture} transparent alphaTest={0.01} toneMapped={false} />
         </mesh>
       </Billboard>
+      {/* Green glow behind Orion for visibility at distance */}
+      <mesh>
+        <sphereGeometry args={[0.15, 16, 16]} />
+        <meshBasicMaterial color="#00ff88" toneMapped={false} />
+      </mesh>
       <Html
-        position={[0, 0.6, 0]}
+        position={[0, 0.8, 0]}
         center
         zIndexRange={[0, 0]}
         style={{ pointerEvents: 'none' }}
@@ -92,7 +81,7 @@ export default function Spacecraft() {
         <div style={ORION_LABEL_STYLE}>ORION</div>
       </Html>
       {hovered && (
-        <Html position={[0.8, 0, 0]} style={{ pointerEvents: 'none' }}>
+        <Html position={[1.0, 0, 0]} style={{ pointerEvents: 'none' }}>
           <div style={{
             background: 'rgba(10,10,30,0.9)',
             backdropFilter: 'blur(8px)',
