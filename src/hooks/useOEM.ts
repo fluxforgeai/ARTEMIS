@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { parseOEM } from '../data/oem-parser';
 import { useMissionStore } from '../store/mission-store';
-import { SCALE_FACTOR } from '../data/mission-config';
 
 const OEM_POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
-const HORIZONS_POLL_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
 export function useOEM() {
   useEffect(() => {
@@ -44,46 +42,14 @@ export function useOEM() {
       retryTimeout = setTimeout(fetchOEM, 30_000);
     }
 
-    async function fetchMoonPosition() {
-      try {
-        const res = await fetch('/api/horizons', { signal: controller.signal });
-        if (!res.ok) throw new Error(`Horizons ${res.status}`);
-        const data = await res.json();
-
-        if (data.result) {
-          // Horizons format: " X = value Y = value Z = value"
-          const posMatch = data.result.match(
-            /X\s*=\s*(-?[\d.]+E[+-]?\d+)\s*Y\s*=\s*(-?[\d.]+E[+-]?\d+)\s*Z\s*=\s*(-?[\d.]+E[+-]?\d+)/
-          );
-          if (posMatch) {
-            useMissionStore.getState().setMoonPosition({
-              x: parseFloat(posMatch[1]) / SCALE_FACTOR,
-              y: parseFloat(posMatch[2]) / SCALE_FACTOR,
-              z: parseFloat(posMatch[3]) / SCALE_FACTOR,
-            });
-          }
-        }
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        console.warn('Horizons fetch failed:', err);
-        useMissionStore.getState().setMoonPosition({ x: 384400 / SCALE_FACTOR, y: 0, z: 0 });
-      }
-    }
-
-    // Set fallback moon position immediately so moonDist works right away (scene units)
-    useMissionStore.getState().setMoonPosition({ x: 384400 / SCALE_FACTOR, y: 0, z: 0 });
-
     fetchOEM();
-    fetchMoonPosition();
 
     const oemInterval = setInterval(fetchOEM, OEM_POLL_INTERVAL);
-    const moonInterval = setInterval(fetchMoonPosition, HORIZONS_POLL_INTERVAL);
 
     return () => {
       controller.abort();
       clearTimeout(retryTimeout);
       clearInterval(oemInterval);
-      clearInterval(moonInterval);
     };
   }, []);
 }

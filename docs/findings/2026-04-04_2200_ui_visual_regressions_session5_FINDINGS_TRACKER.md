@@ -3,7 +3,7 @@
 # UI & Visual Regressions (Session 5) -- Findings Tracker
 
 **Created**: 2026-04-04 22:00 UTC
-**Last Updated**: 2026-04-04 23:30 UTC
+**Last Updated**: 2026-04-05 01:00 UTC
 **Origin**: User screenshot review at session 5 start -- 4 screenshots revealing layout, z-index, trajectory, and mobile overflow issues
 **Session**: 5
 **Scope**: HUD layout regressions (ProgressBar overlap/height), trajectory rendering near Moon, and mobile MissionEventsPanel overflow (4 component files, 4 issues)
@@ -79,23 +79,25 @@ F3 and F4 are independent of each other and of F1/F2.
 
 **Summary**: The trajectory line near the Moon appears visually broken or incorrectly rendered. Additionally, the trajectory appears to loop counter-clockwise around the Moon, which the user questions. The `splitAroundBodies()` culling with `MOON_VISUAL_RADIUS = 0.7` may be over-culling or the computed Moon position (derived from max-distance OEM point minus 10,637 km offset) may be slightly off, creating trajectory gaps. Trajectory culling near the Moon was previously fixed in Session 4 (commit 26ef3a1).
 
-**Root cause**: The Moon position calculation uses an approximation (max-distance OEM point offset by 10,637 km). If this places the Moon center slightly off from the true trajectory geometry, the 0.7-unit culling radius clips visible trajectory segments or leaves rendering artifacts. The trajectory direction is determined by the OEM data (NASA planning data in EME2000 frame) and may appear counter-clockwise from certain camera angles.
+**Root cause**: Race condition between `useOEM.ts` and `Moon.tsx` writing to `moonPosition` in the store. Moon.tsx computes the correct circumcenter position and renders the sphere there, but `useOEM.ts` overwrites the store value with a Horizons API or fallback value. Trajectory.tsx reads from the store for culling, so it culls at the wrong position -- causing the trajectory to pass through the visible Moon sphere. Prior RCA Fix 3 (unify Moon position source) was not implemented.
 
 **Resolution tasks**:
 
 - [x] **F3.1**: Investigate -- confirm Moon position accuracy relative to trajectory, verify culling radius, check trajectory direction against Artemis II mission profile (-> /investigate -> Stage: Investigating)
 - [x] **F3.2**: RCA + fix design -- circumcenter algorithm, reduce culling radius, unify Moon position source (-> /rca-bugfix -> Stage: RCA Complete)
-- [ ] **F3.3**: Implement fix (Stage: Implementing -> Resolved)
-- [ ] **F3.4**: Code review (-> /forge-review -> Stage: Reviewed)
-- [ ] **F3.5**: Verify trajectory renders cleanly near Moon from all camera presets (Stage: Verified)
+- [x] **F3.2b**: Re-investigate -- race condition between useOEM.ts and Moon.tsx overwriting moonPosition (-> /investigate -> Stage: Investigating)
+- [x] **F3.3**: RCA + fix -- remove useOEM.ts moonPosition writes, make Moon.tsx sole source (-> /rca-bugfix -> Stage: RCA Complete)
+- [ ] **F3.4**: Implement fix (Stage: Implementing -> Resolved)
+- [ ] **F3.5**: Code review (-> /forge-review -> Stage: Reviewed)
+- [ ] **F3.6**: Verify trajectory renders cleanly near Moon from all camera presets (Stage: Verified)
 
-**Recommended next step**: `/wrought-implement` with prompt at `docs/prompts/2026-04-04_2130_trajectory_near_moon.md`
+**Recommended next step**: `/wrought-implement` with prompt at `docs/prompts/2026-04-05_0105_trajectory_through_moon_race.md`
 
 **Status**: In Progress
-**Stage**: RCA Complete
+**Stage**: Investigating
 **Resolved in session**: --
 **Verified in session**: --
-**Notes**: Recurring regression. Root cause confirmed: Moon.tsx flybyPos algorithm is geometrically flawed -- offsets along Earth-to-max-distance radial, but Moon center is ~11,000 km perpendicular to that line. Closest trajectory approach to computed Moon is 3,684 km (0.37 scene), inside culling radius 0.7, causing 206 points (~13 hrs) to be culled. Correct Moon center gives closest approach of 8,251 km (0.83 scene), outside culling radius. Trajectory direction (counter-clockwise from north) is correct. Three fixes needed: (1) replace Moon position algorithm, (2) reduce culling radius, (3) unify Moon position source. Key files: `src/components/Trajectory.tsx`, `src/components/Moon.tsx`, `src/hooks/useOEM.ts`, `public/fallback-oem.asc`.
+**Notes**: 4th manifestation across Sessions 2-5. Circumcenter algorithm (Fix 1) and reduced culling radius (Fix 2) were implemented but Fix 3 (unify Moon position source) was not. `useOEM.ts` writes to `moonPosition` 3 times (immediate fallback, Horizons API success, Horizons API failure), overwriting Moon.tsx's correct circumcenter value. Moon sphere renders at circumcenter (flybyPos prop), but Trajectory.tsx culls at the overwritten store value. Fix: remove all `setMoonPosition` calls from `useOEM.ts`, remove `fetchMoonPosition` function entirely. Key files: `src/hooks/useOEM.ts` (remove moonPosition writes), `src/components/Moon.tsx` (already correct -- sole source), `src/components/Trajectory.tsx` (already correct -- reads from store).
 **GitHub Issue**: --
 **Project Item ID**: --
 
@@ -105,6 +107,7 @@ F3 and F4 are independent of each other and of F1/F2.
 | Open | 2026-04-04 22:00 UTC | 5 | [Finding Report](2026-04-04_2200_ui_visual_regressions_session5.md) |
 | Investigating | 2026-04-04 23:30 UTC | 5 | [Investigation](../../investigations/2026-04-04_2330_trajectory_near_moon_rendering.md) |
 | RCA Complete | 2026-04-04 21:30 UTC | 5 | [RCA](../../RCAs/2026-04-04_2130_trajectory_near_moon.md), [Prompt](../../prompts/2026-04-04_2130_trajectory_near_moon.md) |
+| Investigating | 2026-04-05 01:00 UTC | 5 | [Investigation](../../investigations/2026-04-05_0100_trajectory_through_moon_race_condition.md) |
 
 ---
 
@@ -178,6 +181,7 @@ F3 and F4 are independent of each other and of F1/F2.
 
 | Date | Session | Action |
 |------|---------|--------|
+| 2026-04-05 01:00 UTC | 5 | F3 re-investigated. Race condition found: useOEM.ts overwrites Moon.tsx's correct circumcenter position in store. Moon sphere renders at circumcenter but Trajectory.tsx culls at overwritten position -- trajectory passes through Moon. Prior RCA Fix 3 (unify source) was not implemented. Investigation: `docs/investigations/2026-04-05_0100_trajectory_through_moon_race_condition.md`. |
 | 2026-04-04 23:30 UTC | 5 | F3 stage -> Investigating. Root cause confirmed: Moon.tsx flybyPos algorithm geometrically flawed (offsets along wrong axis), causing 206 trajectory points culled (~13 hrs). Correct Moon center is ~11,000 km from computed position. Trajectory direction confirmed correct (counter-clockwise). Investigation: `docs/investigations/2026-04-04_2330_trajectory_near_moon_rendering.md`. |
 | 2026-04-04 20:52 UTC | 5 | F1 + F2 -> Resolved. Forge-review LGTM (0C/0W/0S). Review: `docs/reviews/2026-04-04_2052_diff.md`. |
 | 2026-04-04 20:48 UTC | 5 | F1 + F2 implemented. 4 CSS class changes across 2 files. Build passes. `/wrought-implement` loop completed in 1 iteration. |
