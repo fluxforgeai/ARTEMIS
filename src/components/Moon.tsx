@@ -1,20 +1,12 @@
-import { useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTexture, Billboard, Html } from '@react-three/drei';
 import { useMissionStore } from '../store/mission-store';
 import { SCALE_FACTOR } from '../data/mission-config';
 
-const MOON_LABEL_STYLE = {
-  color: '#aaaaaa',
-  fontSize: '10px',
-  fontFamily: 'monospace',
-  fontWeight: 'bold' as const,
-  textShadow: '0 0 6px rgba(170,170,170,0.4)',
-  whiteSpace: 'nowrap' as const,
-};
-
 export default function Moon() {
   const texture = useTexture('/textures/moon-hires.png');
   const oemData = useMissionStore((s) => s.oemData);
+  const [hovered, setHovered] = useState(false);
 
   const flybyPos = useMemo((): [number, number, number] => {
     if (!oemData || oemData.length === 0) return [38.44, 0, 0];
@@ -42,7 +34,9 @@ export default function Moon() {
     return [moonX, moonY, moonZ];
   }, [oemData]);
 
-  // Store moon position for trajectory culling and moon distance calculation
+  // Earth-Moon distance from Moon's scene position (scene units * SCALE_FACTOR = km)
+  const earthDistKm = Math.sqrt(flybyPos[0] ** 2 + flybyPos[1] ** 2 + flybyPos[2] ** 2) * SCALE_FACTOR;
+
   useEffect(() => {
     useMissionStore.getState().setMoonPosition({
       x: flybyPos[0], y: flybyPos[1], z: flybyPos[2],
@@ -51,11 +45,13 @@ export default function Moon() {
 
   return (
     <group position={flybyPos}>
-      {/* Moon billboard sprite */}
       <Billboard>
-        <mesh>
+        <mesh
+          onPointerOver={() => setHovered(true)}
+          onPointerOut={() => setHovered(false)}
+        >
           <planeGeometry args={[1.5, 1.5]} />
-          <meshBasicMaterial map={texture} transparent toneMapped={false} />
+          <meshBasicMaterial map={texture} transparent alphaTest={0.1} toneMapped={false} />
         </mesh>
       </Billboard>
       <Html
@@ -64,8 +60,49 @@ export default function Moon() {
         zIndexRange={[0, 0]}
         style={{ pointerEvents: 'none' }}
       >
-        <div style={MOON_LABEL_STYLE}>MOON</div>
+        <div style={{
+          color: '#aaaaaa',
+          fontSize: '10px',
+          fontFamily: 'monospace',
+          fontWeight: 'bold',
+          textShadow: '0 0 6px rgba(170,170,170,0.4)',
+          whiteSpace: 'nowrap',
+        }}>MOON</div>
       </Html>
+      {hovered && (
+        <Html position={[1.0, 0, 0]} style={{ pointerEvents: 'none' }}>
+          <div style={{
+            background: 'rgba(10,10,30,0.9)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(170,170,170,0.3)',
+            borderRadius: '8px',
+            padding: '10px 14px',
+            minWidth: '200px',
+            fontFamily: "'JetBrains Mono', monospace",
+          }}>
+            <div style={{ fontSize: '12px', color: '#aaaaaa', fontWeight: 'bold', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Moon
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <InfoRow label="Type" value="Natural Satellite" />
+              <InfoRow label="Radius" value="1,737 km" />
+              <InfoRow label="Mass" value="7.35 x 10^22 kg" />
+              <InfoRow label="Gravity" value="1.62 m/s^2" />
+              <InfoRow label="Orbital Period" value="27.3 days" />
+              <InfoRow label="Earth Distance" value={`${Math.round(earthDistKm).toLocaleString()} km`} color="#00d4ff" />
+            </div>
+          </div>
+        </Html>
+      )}
     </group>
+  );
+}
+
+function InfoRow({ label, value, color = '#ffffff' }: { label: string; value: string; color?: string }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+      <span style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
+      <span style={{ fontSize: '11px', color, fontWeight: 'bold' }}>{value}</span>
+    </div>
   );
 }

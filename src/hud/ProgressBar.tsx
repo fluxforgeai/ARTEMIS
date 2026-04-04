@@ -9,6 +9,7 @@ const TOTAL_MISSION_HOURS = 240;
 export default function ProgressBar() {
   const { progress, totalMs } = useMission();
   const setHoveredMilestoneHours = useMissionStore((s) => s.setHoveredMilestoneHours);
+  const externalHoveredHours = useMissionStore((s) => s.hoveredMilestoneHours);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const elapsedHours = totalMs / 3_600_000;
@@ -35,6 +36,12 @@ export default function ProgressBar() {
 
     return { milestoneData: data, currentIndex: idx };
   }, [elapsedHours]);
+
+  // Compute external hover index from MissionEventsPanel
+  const externalHoveredIndex = externalHoveredHours != null
+    ? milestoneData.findIndex((m) => m.missionElapsedHours === externalHoveredHours)
+    : null;
+  const activeHoveredIndex = hoveredIndex ?? (externalHoveredIndex !== -1 ? externalHoveredIndex : null);
 
   const nextMilestone = milestoneData[currentIndex + 1] ?? null;
   const countdown = useMemo(() => {
@@ -110,7 +117,7 @@ export default function ProgressBar() {
 
               {/* Tooltip */}
               <AnimatePresence>
-                {hoveredIndex === i && (
+                {activeHoveredIndex === i && (
                   <motion.div
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
