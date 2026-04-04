@@ -1,9 +1,43 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTexture, Billboard, Html } from '@react-three/drei';
+import * as THREE from 'three';
 import { useMissionStore } from '../store/mission-store';
 
+/**
+ * Creates a circular texture by drawing the source image onto a canvas
+ * with a circular clip path. Pixels outside the circle get alpha=0.
+ */
+function useCircularTexture(path: string, radius?: number): THREE.Texture {
+  const source = useTexture(path);
+  return useMemo(() => {
+    const img = source.image as HTMLImageElement;
+    const size = Math.max(img.width, img.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+
+    // Circular clip
+    ctx.beginPath();
+    const r = radius ?? size / 2;
+    ctx.arc(size / 2, size / 2, r, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+
+    // Draw centered (crops non-square images to circle)
+    const offsetX = (size - img.width) / 2;
+    const offsetY = (size - img.height) / 2;
+    ctx.drawImage(img, offsetX, offsetY);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = source.colorSpace;
+    tex.needsUpdate = true;
+    return tex;
+  }, [source, radius]);
+}
+
 export default function Earth() {
-  const texture = useTexture('/textures/earth-hires.png');
+  const texture = useCircularTexture('/textures/earth-hires.png');
   const moonPosition = useMissionStore((s) => s.moonPosition);
   const [hovered, setHovered] = useState(false);
 
@@ -18,8 +52,8 @@ export default function Earth() {
           onPointerOver={() => setHovered(true)}
           onPointerOut={() => setHovered(false)}
         >
-          <circleGeometry args={[1.5, 64]} />
-          <meshBasicMaterial map={texture} toneMapped={false} />
+          <planeGeometry args={[3.0, 3.0]} />
+          <meshBasicMaterial map={texture} transparent toneMapped={false} />
         </mesh>
       </Billboard>
       {hovered && (
