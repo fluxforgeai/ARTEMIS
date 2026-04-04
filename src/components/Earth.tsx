@@ -19,7 +19,7 @@ export default function Earth() {
       {/* Earth sphere */}
       <mesh ref={meshRef}>
         <sphereGeometry args={[1.274, 64, 64]} />
-        <meshStandardMaterial map={texture} emissive="#4488dd" emissiveIntensity={0.45} />
+        <meshStandardMaterial map={texture} emissive="#4488dd" emissiveIntensity={2.0} toneMapped={false} />
       </mesh>
       {/* Atmosphere glow */}
       <mesh scale={1.08}>
@@ -27,7 +27,7 @@ export default function Earth() {
         <meshBasicMaterial
           color="#77bbff"
           transparent
-          opacity={0.18}
+          opacity={0.08}
           side={THREE.BackSide}
         />
       </mesh>

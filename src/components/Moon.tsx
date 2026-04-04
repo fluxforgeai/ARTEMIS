@@ -3,6 +3,15 @@ import { useTexture, Html } from '@react-three/drei';
 import { useMissionStore } from '../store/mission-store';
 import { SCALE_FACTOR } from '../data/mission-config';
 
+const MOON_LABEL_STYLE = {
+  color: '#aaaaaa',
+  fontSize: '10px',
+  fontFamily: 'monospace',
+  fontWeight: 'bold' as const,
+  textShadow: '0 0 6px rgba(170,170,170,0.4)',
+  whiteSpace: 'nowrap' as const,
+};
+
 export default function Moon() {
   const texture = useTexture('/textures/moon.jpg');
   const oemData = useMissionStore((s) => s.oemData);
@@ -13,18 +22,19 @@ export default function Moon() {
   const flybyPos = useMemo((): [number, number, number] => {
     if (!oemData || oemData.length === 0) return [38.44, 0, 0];
 
-    // Find the flyby point (max distance from Earth)
-    let maxDist = 0;
+    // Find the flyby point (max distance from Earth) — compare squared distances
+    let maxDistSq = 0;
     let flybyVector = oemData[0];
     for (const v of oemData) {
-      const dist = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-      if (dist > maxDist) {
-        maxDist = dist;
+      const distSq = v.x * v.x + v.y * v.y + v.z * v.z;
+      if (distSq > maxDistSq) {
+        maxDistSq = distSq;
         flybyVector = v;
       }
     }
 
-    // Direction from Earth to flyby point
+    // Direction from Earth to flyby point (sqrt only on the winner)
+    const maxDist = Math.sqrt(maxDistSq);
     const dx = flybyVector.x / maxDist;
     const dy = flybyVector.y / maxDist;
     const dz = flybyVector.z / maxDist;
@@ -44,11 +54,11 @@ export default function Moon() {
     <group position={flybyPos}>
       <mesh>
         <sphereGeometry args={[0.5, 32, 32]} />
-        <meshStandardMaterial map={texture} emissive="#cccccc" emissiveIntensity={0.4} />
+        <meshStandardMaterial map={texture} emissive="#cccccc" emissiveIntensity={1.5} toneMapped={false} />
       </mesh>
       <mesh>
         <sphereGeometry args={[0.65, 16, 16]} />
-        <meshBasicMaterial color="#dddddd" transparent opacity={0.1} />
+        <meshBasicMaterial color="#dddddd" transparent opacity={0.03} />
       </mesh>
       <Html
         position={[0, 0.9, 0]}
@@ -56,14 +66,7 @@ export default function Moon() {
         zIndexRange={[0, 0]}
         style={{ pointerEvents: 'none' }}
       >
-        <div style={{
-          color: '#aaaaaa',
-          fontSize: '10px',
-          fontFamily: 'monospace',
-          fontWeight: 'bold',
-          textShadow: '0 0 6px rgba(170,170,170,0.4)',
-          whiteSpace: 'nowrap',
-        }}>
+        <div style={MOON_LABEL_STYLE}>
           MOON
         </div>
       </Html>

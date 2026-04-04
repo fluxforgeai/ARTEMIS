@@ -25,3 +25,8 @@ body {
   width: 100vw;
   height: 100vh;
 }
+
+@keyframes alert-glow-red {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 68, 68, 0.3); }
+  50% { box-shadow: 0 0 16px rgba(255, 68, 68, 0.6); }
+}

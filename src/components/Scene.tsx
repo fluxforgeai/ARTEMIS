@@ -1,5 +1,7 @@
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { EffectComposer, Bloom, ToneMapping } from '@react-three/postprocessing';
+import { ToneMappingMode } from 'postprocessing';
 import Stars from './Stars';
 import Earth from './Earth';
 import Moon from './Moon';
@@ -31,6 +33,17 @@ export default function Scene() {
 
       <Trajectory />
       <Spacecraft />
+
+      <EffectComposer>
+        <Bloom
+          mipmapBlur
+          luminanceThreshold={1}
+          luminanceSmoothing={0.3}
+          intensity={1.5}
+          radius={0.8}
+        />
+        <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+      </EffectComposer>
     </Canvas>
   );
 }
