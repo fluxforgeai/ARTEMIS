@@ -36,7 +36,7 @@ export default function SpaceWeatherPanel() {
   const source = useMissionStore((s) => s.spaceWeather.source);
 
   return (
-    <div className="flex items-center gap-3 flex-wrap">
+    <div className="flex items-center gap-3 flex-wrap bg-[rgba(10,10,30,0.7)] backdrop-blur-sm border border-[rgba(0,212,255,0.2)] rounded-lg px-3 py-2">
       <span className="text-[10px] uppercase tracking-wider text-gray-400">Space WX</span>
 
       {/* Kp Index */}
