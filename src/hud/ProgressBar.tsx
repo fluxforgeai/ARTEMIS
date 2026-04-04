@@ -1,30 +1,33 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMission } from '../hooks/useMission';
+import { useMissionStore } from '../store/mission-store';
 import { MILESTONES } from '../data/mission-config';
 
 const TOTAL_MISSION_HOURS = 240;
 
 export default function ProgressBar() {
   const { progress, totalMs } = useMission();
+  const setHoveredMilestoneHours = useMissionStore((s) => s.setHoveredMilestoneHours);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const elapsedHours = totalMs / 3_600_000;
 
   const { milestoneData, currentIndex } = useMemo(() => {
-    const data = MILESTONES.map((m, i) => {
+    // Sort milestones by time for display (Belt Transit at T+5h comes before OTB-1 at T+8h)
+    const sorted = [...MILESTONES].sort((a, b) => a.missionElapsedHours - b.missionElapsedHours);
+
+    const data = sorted.map((m, i) => {
       const position = (m.missionElapsedHours / TOTAL_MISSION_HOURS) * 100;
       const isComplete = elapsedHours >= m.missionElapsedHours;
-      // Current = last completed milestone
       const isNext = i > 0 && elapsedHours < m.missionElapsedHours &&
-        elapsedHours >= MILESTONES[i - 1].missionElapsedHours;
+        elapsedHours >= sorted[i - 1].missionElapsedHours;
       return { ...m, position, isComplete, isNext, index: i };
     });
 
-    // Find the current phase index (last completed milestone)
     let idx = 0;
-    for (let i = MILESTONES.length - 1; i >= 0; i--) {
-      if (elapsedHours >= MILESTONES[i].missionElapsedHours) {
+    for (let i = sorted.length - 1; i >= 0; i--) {
+      if (elapsedHours >= sorted[i].missionElapsedHours) {
         idx = i;
         break;
       }
@@ -33,7 +36,7 @@ export default function ProgressBar() {
     return { milestoneData: data, currentIndex: idx };
   }, [elapsedHours]);
 
-  const nextMilestone = MILESTONES[currentIndex + 1] ?? null;
+  const nextMilestone = milestoneData[currentIndex + 1] ?? null;
   const countdown = useMemo(() => {
     if (!nextMilestone) return null;
     const remainingHours = nextMilestone.missionElapsedHours - elapsedHours;
@@ -48,8 +51,18 @@ export default function ProgressBar() {
     return parts.join(' ');
   }, [nextMilestone, elapsedHours]);
 
+  function handleHover(i: number) {
+    setHoveredIndex(i);
+    setHoveredMilestoneHours(milestoneData[i].missionElapsedHours);
+  }
+
+  function handleLeave() {
+    setHoveredIndex(null);
+    setHoveredMilestoneHours(null);
+  }
+
   return (
-    <div className="bg-[rgba(10,10,30,0.7)] backdrop-blur-sm border border-[rgba(0,212,255,0.2)] rounded-lg px-4 py-3 min-w-[200px] sm:min-w-[420px] col-span-2 sm:col-span-1 sm:flex-1">
+    <div className="bg-[rgba(10,10,30,0.7)] backdrop-blur-sm border border-[rgba(0,212,255,0.2)] rounded-lg px-4 py-3 min-w-[200px] sm:min-w-[420px] col-span-2 sm:col-span-1 sm:flex-1 sm:mr-16">
       <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Mission Progress</div>
       <div className="flex items-center gap-2">
         {/* Track wrapper — relative for markers, inner overflow-hidden for fill */}
@@ -69,10 +82,10 @@ export default function ProgressBar() {
               key={m.name}
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10"
               style={{ left: `${m.position}%` }}
-              onMouseEnter={() => setHoveredIndex(i)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              onTouchStart={() => setHoveredIndex(i)}
-              onTouchEnd={() => setHoveredIndex(null)}
+              onMouseEnter={() => handleHover(i)}
+              onMouseLeave={handleLeave}
+              onTouchStart={() => handleHover(i)}
+              onTouchEnd={handleLeave}
             >
               {i === currentIndex ? (
                 <motion.div
@@ -103,20 +116,21 @@ export default function ProgressBar() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 4 }}
                     transition={{ duration: 0.15 }}
-                    className={`absolute bottom-full mb-2 z-50 bg-[rgba(10,10,30,0.9)] backdrop-blur-sm border border-[rgba(0,212,255,0.2)] rounded px-2 py-1.5 max-w-[180px] whitespace-normal ${
-                      m.position < 15 ? 'left-0' : m.position > 85 ? 'right-0' : 'left-1/2 -translate-x-1/2'
+                    className={`absolute bottom-full mb-2 z-50 bg-[rgba(10,10,30,0.9)] backdrop-blur-sm border border-[rgba(0,212,255,0.2)] rounded px-2 py-1.5 max-w-[200px] whitespace-normal ${
+                      m.position < 10 ? 'left-0' : m.position > 90 ? 'right-0' : 'left-1/2 -translate-x-1/2'
                     }`}
                   >
                     <div className="text-[10px] text-white font-mono font-bold">{m.name}</div>
                     <div className="text-[9px] text-gray-400 mt-0.5">{m.description}</div>
                     <div className="text-[9px] text-gray-500 mt-0.5">T+{m.missionElapsedHours}h</div>
+                    <div className="text-[9px] text-[#00d4ff]/60 mt-0.5">Hover to see on trajectory</div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
           ))}
         </div>
-        <span className="text-sm font-mono text-hud-blue font-bold">
+        <span className="text-sm font-mono text-hud-blue font-bold whitespace-nowrap">
           {progress.toFixed(1)}%
         </span>
       </div>

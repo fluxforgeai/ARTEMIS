@@ -25,14 +25,24 @@ export interface Milestone {
 
 export const MILESTONES: Milestone[] = [
   { name: 'Launch', missionElapsedHours: 0, description: 'SLS lifts off from LC-39B, Kennedy Space Center' },
-  { name: 'Orbital Insertion', missionElapsedHours: 0.15, description: 'Orion enters initial Earth orbit' },
-  { name: 'Translunar Injection', missionElapsedHours: 2, description: 'Upper stage fires for Moon trajectory' },
-  { name: 'Service Module Separation', missionElapsedHours: 2.5, description: 'ICPS separates from Orion' },
-  { name: 'Outbound Coast', missionElapsedHours: 24, description: 'Cruising toward the Moon' },
-  { name: 'Lunar Flyby', missionElapsedHours: 96, description: 'Closest approach ~8,900 km above far side' },
-  { name: 'Return Coast', missionElapsedHours: 144, description: 'Free return trajectory back to Earth' },
-  { name: 'Entry Interface', missionElapsedHours: 228, description: 'Orion re-enters Earth atmosphere' },
-  { name: 'Splashdown', missionElapsedHours: 240, description: 'Pacific Ocean recovery' },
+  { name: 'SRB Separation', missionElapsedHours: 0.035, description: 'Solid rocket boosters jettison at T+2 min' },
+  { name: 'Core Stage Sep', missionElapsedHours: 0.14, description: 'Core stage separates, ICPS takes over' },
+  { name: 'Perigee Raise', missionElapsedHours: 0.25, description: 'ICPS circularizes initial parking orbit' },
+  { name: 'TLI Burn', missionElapsedHours: 1.75, description: 'Translunar Injection — ICPS fires for Moon trajectory' },
+  { name: 'ICPS Separation', missionElapsedHours: 2.5, description: 'Interim Cryogenic Propulsion Stage separates from Orion' },
+  { name: 'OTB-1', missionElapsedHours: 8, description: 'Outbound Trajectory Burn 1 — fine-tune Earth departure' },
+  { name: 'Belt Transit', missionElapsedHours: 5, description: 'Orion transits the Van Allen radiation belts' },
+  { name: 'OTB-2', missionElapsedHours: 24, description: 'Outbound Trajectory Burn 2 — course correction' },
+  { name: 'Star Tracker Cal', missionElapsedHours: 36, description: 'Navigation star tracker calibration and crew observation' },
+  { name: 'MCC-1', missionElapsedHours: 48, description: 'Mid-Course Correction 1 — refine lunar approach trajectory' },
+  { name: 'Lunar Approach', missionElapsedHours: 80, description: 'Entering lunar sphere of influence' },
+  { name: 'Lunar Flyby', missionElapsedHours: 96, description: 'Closest approach ~8,900 km above lunar far side' },
+  { name: 'Return Burn', missionElapsedHours: 120, description: 'Return trajectory correction — target Earth entry corridor' },
+  { name: 'Return Coast', missionElapsedHours: 144, description: 'Free return coast toward Earth' },
+  { name: 'MCC-3', missionElapsedHours: 200, description: 'Final mid-course correction — precision entry targeting' },
+  { name: 'CM/SM Sep', missionElapsedHours: 227, description: 'Crew Module separates from Service Module' },
+  { name: 'Entry Interface', missionElapsedHours: 228, description: 'Orion enters Earth atmosphere at ~40,000 km/h' },
+  { name: 'Splashdown', missionElapsedHours: 240, description: 'Pacific Ocean recovery by USS Portland' },
 ];
 
 export function getMissionElapsed(now: Date = new Date()): {

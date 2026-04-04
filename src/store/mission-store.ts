@@ -51,6 +51,7 @@ interface MissionStore {
   dsnStations: DsnStation[];
   cameraMode: CameraMode;
   chatOpen: boolean;
+  hoveredMilestoneHours: number | null;
   spaceWeather: SpaceWeatherState;
   alerts: Alert[];
 
@@ -61,6 +62,7 @@ interface MissionStore {
   setCameraMode: (mode: CameraMode) => void;
   toggleChat: () => void;
   setLoading: (loading: boolean) => void;
+  setHoveredMilestoneHours: (hours: number | null) => void;
   setSpaceWeather: (data: SpaceWeatherState) => void;
   addAlert: (alert: Omit<Alert, 'id'>) => void;
   dismissAlert: (id: string) => void;
@@ -78,6 +80,7 @@ export const useMissionStore = create<MissionStore>((set) => ({
   dsnStations: [],
   cameraMode: 'free',
   chatOpen: false,
+  hoveredMilestoneHours: null,
   spaceWeather: {
     kpIndex: 3,
     solarWindSpeed: 400,
@@ -99,6 +102,7 @@ export const useMissionStore = create<MissionStore>((set) => ({
   setCameraMode: (mode) => set({ cameraMode: mode }),
   toggleChat: () => set((prev) => ({ chatOpen: !prev.chatOpen })),
   setLoading: (loading) => set({ isLoading: loading }),
+  setHoveredMilestoneHours: (hours) => set({ hoveredMilestoneHours: hours }),
   setSpaceWeather: (data) => set({ spaceWeather: data }),
   addAlert: (alert) =>
     set((prev) => {

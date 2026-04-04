@@ -7,6 +7,7 @@ import Earth from './Earth';
 import Moon from './Moon';
 import Trajectory from './Trajectory';
 import Spacecraft from './Spacecraft';
+import MilestoneMarker from './MilestoneMarker';
 import CameraController from './CameraController';
 import DataDriver from './DataDriver';
 import CameraDebug from './CameraDebug';
@@ -33,6 +34,7 @@ export default function Scene() {
 
       <Trajectory />
       <Spacecraft />
+      <MilestoneMarker />
 
       <EffectComposer>
         <Bloom
