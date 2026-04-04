@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useMissionStore } from '../store/mission-store';
 import { lagrangeInterpolate } from '../data/interpolator';
+import { SCALE_FACTOR } from '../data/mission-config';
 
 // Shared ref for spacecraft position — Spacecraft.tsx reads this directly
 export const spacecraftPosition = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0 };
@@ -45,9 +46,10 @@ export default function DataDriver() {
 
     let moonDist: number | null = null;
     if (store.moonPosition) {
-      const dx = interpolated.x - store.moonPosition.x;
-      const dy = interpolated.y - store.moonPosition.y;
-      const dz = interpolated.z - store.moonPosition.z;
+      // moonPosition is in scene units — convert back to km for distance calc
+      const dx = interpolated.x - store.moonPosition.x * SCALE_FACTOR;
+      const dy = interpolated.y - store.moonPosition.y * SCALE_FACTOR;
+      const dz = interpolated.z - store.moonPosition.z * SCALE_FACTOR;
       moonDist = Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
