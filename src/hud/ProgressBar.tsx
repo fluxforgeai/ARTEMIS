@@ -69,7 +69,7 @@ export default function ProgressBar() {
   }
 
   return (
-    <div className="bg-[rgba(10,10,30,0.7)] backdrop-blur-sm border border-[rgba(0,212,255,0.2)] rounded-lg px-3 sm:px-4 py-3 min-w-0 sm:min-w-[420px] col-span-2 sm:col-span-1 sm:flex-1">
+    <div className="bg-[rgba(10,10,30,0.7)] backdrop-blur-sm border border-[rgba(0,212,255,0.2)] rounded-lg px-3 sm:px-4 py-2 sm:py-3 min-w-0 sm:min-w-[420px] col-span-2 sm:col-span-1 sm:flex-1">
       <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Mission Progress</div>
       <div className="flex items-center gap-2">
         {/* Track wrapper — relative for markers, inner overflow-hidden for fill */}

@@ -40,7 +40,7 @@ export default function HUD() {
   const toggleMore = useCallback(() => setMoreOpen((prev) => !prev), []);
 
   return (
-    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-2 sm:p-4 z-[var(--z-hud)] safe-area-pad">
+    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-2 sm:p-4 z-[var(--z-hud)] isolate safe-area-pad">
       <WeatherAlertDriver />
       {/* Top bar */}
       <div className="flex items-center justify-between pointer-events-auto">
@@ -96,7 +96,8 @@ export default function HUD() {
         </AnimatePresence>
 
         {/* Primary telemetry — always visible */}
-        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 pointer-events-auto">
+        {/* sm:pr-16 reserves space for chat toggle — see RCA docs/RCAs/2026-04-04_2045_progressbar_overlay_and_height.md */}
+        <div className="grid grid-cols-2 sm:flex sm:items-end gap-2 sm:gap-3 sm:pr-16 pointer-events-auto">
           <SpeedCard />
           <EarthDistCard />
           <div className="hidden sm:block">
