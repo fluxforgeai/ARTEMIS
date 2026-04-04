@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useTexture, Html } from '@react-three/drei';
+import { useMemo, useEffect } from 'react';
+import { useTexture, Billboard, Html } from '@react-three/drei';
 import { useMissionStore } from '../store/mission-store';
 import { SCALE_FACTOR } from '../data/mission-config';
 
@@ -13,16 +13,12 @@ const MOON_LABEL_STYLE = {
 };
 
 export default function Moon() {
-  const texture = useTexture('/textures/moon.jpg');
+  const texture = useTexture('/textures/moon-hires.png');
   const oemData = useMissionStore((s) => s.oemData);
 
-  // Position Moon near the flyby point but OFFSET from the trajectory.
-  // The spacecraft flies ~8,900 km above the Moon's surface (~10,637 km from center).
-  // Place Moon further from Earth than the max-distance trajectory point.
   const flybyPos = useMemo((): [number, number, number] => {
     if (!oemData || oemData.length === 0) return [38.44, 0, 0];
 
-    // Find the flyby point (max distance from Earth) — compare squared distances
     let maxDistSq = 0;
     let flybyVector = oemData[0];
     for (const v of oemData) {
@@ -33,15 +29,11 @@ export default function Moon() {
       }
     }
 
-    // Direction from Earth to flyby point (sqrt only on the winner)
     const maxDist = Math.sqrt(maxDistSq);
     const dx = flybyVector.x / maxDist;
     const dy = flybyVector.y / maxDist;
     const dz = flybyVector.z / maxDist;
 
-    // Moon is CLOSER to Earth than the flyby point — spacecraft passes
-    // behind the Moon's far side at ~8,900 km above surface.
-    // Offset Moon TOWARD Earth by ~10,637 km (8,900 + 1,737 radius).
     const offsetKm = 10637;
     const moonX = (flybyVector.x - dx * offsetKm) / SCALE_FACTOR;
     const moonY = (flybyVector.y - dy * offsetKm) / SCALE_FACTOR;
@@ -50,25 +42,29 @@ export default function Moon() {
     return [moonX, moonY, moonZ];
   }, [oemData]);
 
+  // Store moon position for trajectory culling and moon distance calculation
+  useEffect(() => {
+    useMissionStore.getState().setMoonPosition({
+      x: flybyPos[0], y: flybyPos[1], z: flybyPos[2],
+    });
+  }, [flybyPos]);
+
   return (
     <group position={flybyPos}>
-      <mesh>
-        <sphereGeometry args={[0.5, 32, 32]} />
-        <meshStandardMaterial map={texture} emissive="#cccccc" emissiveIntensity={1.5} toneMapped={false} />
-      </mesh>
-      <mesh>
-        <sphereGeometry args={[0.65, 16, 16]} />
-        <meshBasicMaterial color="#dddddd" transparent opacity={0.03} />
-      </mesh>
+      {/* Moon billboard sprite */}
+      <Billboard>
+        <mesh>
+          <planeGeometry args={[1.5, 1.5]} />
+          <meshBasicMaterial map={texture} transparent toneMapped={false} />
+        </mesh>
+      </Billboard>
       <Html
-        position={[0, 0.9, 0]}
+        position={[0, 1.0, 0]}
         center
         zIndexRange={[0, 0]}
         style={{ pointerEvents: 'none' }}
       >
-        <div style={MOON_LABEL_STYLE}>
-          MOON
-        </div>
+        <div style={MOON_LABEL_STYLE}>MOON</div>
       </Html>
     </group>
   );

@@ -116,14 +116,14 @@ export default function ProgressBar() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 4 }}
                     transition={{ duration: 0.15 }}
-                    className={`absolute bottom-full mb-2 z-50 bg-[rgba(10,10,30,0.9)] backdrop-blur-sm border border-[rgba(0,212,255,0.2)] rounded px-2 py-1.5 max-w-[200px] whitespace-normal ${
+                    className={`absolute bottom-full mb-3 z-50 bg-[rgba(10,10,30,0.95)] backdrop-blur-md border border-[rgba(0,212,255,0.3)] rounded-lg px-3 py-2 min-w-[180px] max-w-[240px] whitespace-normal shadow-lg ${
                       m.position < 10 ? 'left-0' : m.position > 90 ? 'right-0' : 'left-1/2 -translate-x-1/2'
                     }`}
                   >
-                    <div className="text-[10px] text-white font-mono font-bold">{m.name}</div>
-                    <div className="text-[9px] text-gray-400 mt-0.5">{m.description}</div>
-                    <div className="text-[9px] text-gray-500 mt-0.5">T+{m.missionElapsedHours}h</div>
-                    <div className="text-[9px] text-[#00d4ff]/60 mt-0.5">Hover to see on trajectory</div>
+                    <div className="text-xs text-white font-mono font-bold">{m.name}</div>
+                    <div className="text-[11px] text-gray-300 mt-1 leading-relaxed">{m.description}</div>
+                    <div className="text-[10px] text-gray-500 mt-1">T+{m.missionElapsedHours}h</div>
+                    <div className="text-[10px] text-[#00d4ff]/70 mt-0.5 italic">See marker on trajectory</div>
                   </motion.div>
                 )}
               </AnimatePresence>

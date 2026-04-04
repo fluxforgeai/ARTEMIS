@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
+import { useTexture, Billboard, Html } from '@react-three/drei';
 import * as THREE from 'three';
 // Read-only shared ref updated by DataDriver each frame — avoids per-frame Zustand subscriptions
 import { spacecraftPosition } from './DataDriver';
@@ -15,50 +15,61 @@ const ORION_LABEL_STYLE = {
   whiteSpace: 'nowrap' as const,
 };
 
+// Reusable vectors to avoid per-frame allocation
+const _vel = new THREE.Vector3();
+const _camRight = new THREE.Vector3();
+const _camUp = new THREE.Vector3();
+
 export default function Spacecraft() {
   const groupRef = useRef<THREE.Group>(null);
-  const meshRef = useRef<THREE.Mesh>(null);
+  const spriteRef = useRef<THREE.Mesh>(null);
+  const texture = useTexture('/textures/orion.png');
 
-  useFrame(({ clock }) => {
+  useFrame(({ camera }) => {
     if (!groupRef.current) return;
 
-    // Read position from shared ref (updated every frame by DataDriver)
     const x = spacecraftPosition.x / SCALE_FACTOR;
     const y = spacecraftPosition.y / SCALE_FACTOR;
     const z = spacecraftPosition.z / SCALE_FACTOR;
 
-    // Only show when we have data
     const hasData = spacecraftPosition.x !== 0 || spacecraftPosition.y !== 0 || spacecraftPosition.z !== 0;
     groupRef.current.visible = hasData;
     groupRef.current.position.set(x, y, z);
 
-    // Pulsing animation
-    if (meshRef.current) {
-      const pulse = 1 + Math.sin(clock.getElapsedTime() * 3) * 0.3;
-      meshRef.current.scale.setScalar(pulse);
+    // Orient Orion sprite along velocity direction projected onto camera plane
+    if (spriteRef.current && hasData) {
+      _vel.set(spacecraftPosition.vx, spacecraftPosition.vy, spacecraftPosition.vz);
+
+      if (_vel.lengthSq() > 0) {
+        // Get camera right and up vectors
+        _camRight.setFromMatrixColumn(camera.matrixWorld, 0);
+        _camUp.setFromMatrixColumn(camera.matrixWorld, 1);
+
+        // Project velocity onto camera's screen plane
+        const projX = _vel.dot(_camRight);
+        const projY = _vel.dot(_camUp);
+
+        // Rotate sprite so Orion's nose (pointing right in image) aligns with velocity
+        spriteRef.current.rotation.z = Math.atan2(projY, projX);
+      }
     }
   });
 
   return (
     <group ref={groupRef}>
-      <mesh ref={meshRef}>
-        <sphereGeometry args={[0.15, 16, 16]} />
-        <meshBasicMaterial color="#00ff88" toneMapped={false} />
-      </mesh>
-      {/* Outer glow */}
-      <mesh>
-        <sphereGeometry args={[0.3, 16, 16]} />
-        <meshBasicMaterial color="#00ff88" transparent opacity={0.05} toneMapped={false} />
-      </mesh>
+      <Billboard>
+        <mesh ref={spriteRef}>
+          <planeGeometry args={[0.6, 0.5]} />
+          <meshBasicMaterial map={texture} transparent toneMapped={false} />
+        </mesh>
+      </Billboard>
       <Html
         position={[0, 0.5, 0]}
         center
         zIndexRange={[0, 0]}
         style={{ pointerEvents: 'none' }}
       >
-        <div style={ORION_LABEL_STYLE}>
-          ORION
-        </div>
+        <div style={ORION_LABEL_STYLE}>ORION</div>
       </Html>
     </group>
   );

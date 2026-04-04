@@ -4,7 +4,7 @@ import { useMissionStore } from '../store/mission-store';
 import { lagrangeInterpolate } from '../data/interpolator';
 
 // Shared ref for spacecraft position — Spacecraft.tsx reads this directly
-export const spacecraftPosition = { x: 0, y: 0, z: 0 };
+export const spacecraftPosition = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0 };
 
 const STORE_UPDATE_INTERVAL = 250; // Throttle store updates to ~4Hz
 
@@ -27,6 +27,9 @@ export default function DataDriver() {
     spacecraftPosition.x = interpolated.x;
     spacecraftPosition.y = interpolated.y;
     spacecraftPosition.z = interpolated.z;
+    spacecraftPosition.vx = interpolated.vx;
+    spacecraftPosition.vy = interpolated.vy;
+    spacecraftPosition.vz = interpolated.vz;
 
     // Throttle Zustand store updates to ~4Hz (triggers HUD re-renders)
     if (now - lastStoreUpdate.current < STORE_UPDATE_INTERVAL) return;
