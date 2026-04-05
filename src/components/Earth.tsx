@@ -28,16 +28,16 @@ export default function Earth() {
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
       >
-        <sphereGeometry args={[1.274, 64, 64]} />
-        <meshStandardMaterial map={texture} emissive="#4488dd" emissiveIntensity={2.0} toneMapped={false} />
+        <sphereGeometry args={[0.637, 64, 64]} />
+        <meshStandardMaterial map={texture} emissive="#4488dd" emissiveIntensity={3.5} toneMapped={false} />
       </mesh>
       {/* Atmosphere glow */}
       <mesh scale={1.08}>
-        <sphereGeometry args={[1.274, 32, 32]} />
+        <sphereGeometry args={[0.637, 32, 32]} />
         <meshBasicMaterial color="#77bbff" transparent opacity={0.08} side={THREE.BackSide} />
       </mesh>
       {hovered && (
-        <Html position={[1.8, 0, 0]} style={{ pointerEvents: 'none' }}>
+        <Html position={[1.0, 0, 0]} style={{ pointerEvents: 'none' }}>
           <div style={{
             background: 'rgba(10,10,30,0.9)',
             backdropFilter: 'blur(8px)',
