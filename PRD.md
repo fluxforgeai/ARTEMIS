@@ -70,8 +70,8 @@ ARTEMIS solves three problems simultaneously:
 | VIZ-04 | Display trajectory line from OEM state vectors: solid orange for past path, dashed cyan for future path | MVP |
 | VIZ-05 | Render star field background (~5,000 particles) | MVP |
 | VIZ-06 | Provide OrbitControls for free camera navigation (rotate, zoom, pan) via mouse and touch | MVP |
-| VIZ-07 | Support camera presets: Follow Orion, Earth View, Moon View, Free Orbit | Post-MVP |
-| VIZ-08 | Apply bloom/glow post-processing effects to Orion marker and Earth atmosphere | Post-MVP |
+| VIZ-07 | Support camera presets: Follow Orion, Earth View, Moon View, Free Orbit | Completed (Session 2) |
+| VIZ-08 | Apply bloom/glow post-processing effects to Orion marker and Earth atmosphere | Completed (Session 4) |
 | VIZ-09 | Render Earth atmosphere glow and day/night terminator | Post-MVP |
 | VIZ-10 | Correct directional lighting from Sun position | MVP |
 
@@ -86,7 +86,7 @@ ARTEMIS solves three problems simultaneously:
 | HUD-05 | Display mission progress as a percentage bar | MVP |
 | HUD-06 | Show "last updated" timestamp for data freshness | MVP |
 | HUD-07 | Animate telemetry numbers smoothly between data updates (no jarring jumps) | MVP |
-| HUD-08 | Display crew activity timeline showing current and upcoming activities | Post-MVP |
+| HUD-08 | Display crew activity timeline showing current and upcoming activities | Completed (Session 4) |
 
 ### 4.3 AI Mission Chatbot
 
@@ -162,7 +162,7 @@ ARTEMIS solves three problems simultaneously:
 |---|---|---|
 | COMPAT-01 | Chrome, Firefox, Safari, Edge (latest 2 versions) | Full support |
 | COMPAT-02 | WebGL2 required for 3D rendering | Detect and show fallback message if unsupported |
-| COMPAT-03 | Responsive layout for tablets and mobile devices | Post-MVP |
+| COMPAT-03 | Responsive layout for tablets and mobile devices | In Progress (15 open findings) |
 
 ---
 
@@ -188,13 +188,16 @@ The MVP delivers a functional, accurate, and visually compelling tracker with th
 
 Post-MVP features add polish, depth, and broader device support, but the tracker is fully usable without them.
 
-- DSN antenna status indicators
-- Camera presets with smooth animation (Follow Orion, Earth View, Moon View)
-- Bloom/glow post-processing effects
+**Completed**:
+- ~~DSN antenna status indicators~~ (Session 1)
+- ~~Camera presets with smooth animation (Follow Orion, Earth View, Moon View)~~ (Session 2)
+- ~~Bloom/glow post-processing effects~~ (Session 4)
+- ~~Crew activity timeline~~ (Session 4)
+- ~~Space weather alerts (DONKI integration)~~ (Session 4)
+
+**Remaining**:
 - Earth atmosphere shader and day/night terminator
-- Crew activity timeline
-- Space weather alerts (DONKI integration)
-- Mobile responsive layout
+- Mobile responsive layout (15 open findings — chat overflow, HUD stack, touch targets, z-index)
 - Mission branding and visual polish
 
 ---

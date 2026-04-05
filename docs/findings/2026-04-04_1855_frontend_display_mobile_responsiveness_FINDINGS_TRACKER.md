@@ -3,7 +3,7 @@
 # Frontend Display & Mobile Responsiveness -- Findings Tracker
 
 **Created**: 2026-04-04 18:55 UTC
-**Last Updated**: 2026-04-04 19:00 UTC
+**Last Updated**: 2026-04-05 11:35 UTC
 **Origin**: `/research` — frontend display and mobile responsiveness audit
 **Session**: 4
 **Scope**: Display issues, layout problems, and mobile responsiveness failures across the ARTEMIS HUD (9 component files, 15 issues)
@@ -16,21 +16,21 @@ Tracking remediation of 15 frontend display and mobile responsiveness issues ide
 
 | # | Finding | Type | Severity | Status | Stage | Report |
 |---|---------|------|----------|--------|-------|--------|
-| F1 | Chat panel fixed width overflow | Defect | **Critical** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F2 | Bottom HUD vertical stack chaos | Debt | **Critical** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F3 | Space weather panel no collapse on mobile | Debt | **High** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F4 | Chat toggle button overlap with HUD | Defect | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F5 | Camera controls not responsive | Debt | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F6 | Progress bar min-width conflict | Debt | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F7 | Milestone tooltips overflow on mobile | Debt | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F8 | Touch targets too small for mobile | Defect | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F9 | z-index stacking chaos | Debt | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F10 | DSN status lacks mobile adaptation | Debt | **Low** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F11 | Mission events panel width hardcoded | Debt | **Low** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F12 | Crew panel positioning on mobile | Debt | **Low** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F13 | Telemetry card text truncation risk | Debt | **Low** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F14 | No safe-area-inset support for notched devices | Gap | **Low** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
-| F15 | Body 100vh not dynamic viewport height | Debt | **Low** | In Progress | Blueprint Ready | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F1 | Chat panel fixed width overflow | Defect | **Critical** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F2 | Bottom HUD vertical stack chaos | Debt | **Critical** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F3 | Space weather panel no collapse on mobile | Debt | **High** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F4 | Chat toggle button overlap with HUD | Defect | **Medium** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F5 | Camera controls not responsive | Debt | **Medium** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F6 | Progress bar min-width conflict | Debt | **Medium** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F7 | Milestone tooltips overflow on mobile | Debt | **Medium** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F8 | Touch targets too small for mobile | Defect | **Medium** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F9 | z-index stacking chaos | Debt | **Medium** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F10 | DSN status lacks mobile adaptation | Debt | **Low** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F11 | Mission events panel width hardcoded | Debt | **Low** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F12 | Crew panel positioning on mobile | Debt | **Low** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F13 | Telemetry card text truncation risk | Debt | **Low** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F14 | No safe-area-inset support for notched devices | Gap | **Low** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
+| F15 | Body 100vh not dynamic viewport height | Debt | **Low** | Resolved | Resolved | [Report](2026-04-04_1855_frontend_display_mobile_responsiveness.md) |
 
 **Status legend**: `Open` -> `In Progress` -> `Resolved` -> `Verified`
 **Stage legend**: `Open` -> `Investigating` / `Designing` -> `RCA Complete` / `Blueprint Ready` -> `Planned` -> `Implementing` -> `Reviewed` -> `Resolved` -> `Verified`
@@ -509,6 +509,7 @@ F10-F15 ── independent low-priority fixes
 |------|---------|--------|
 | 2026-04-04 19:00 UTC | 4 | Blueprint complete. F1-F15 all moved to Blueprint Ready. 3-phase implementation plan: Phase 1 (F1, F2, F15 -- chat responsive, HUD progressive disclosure, dvh), Phase 2 (F3, F5, F6, F7, F8 -- SpaceWeather compact, Camera responsive, ProgressBar fixes, touch targets), Phase 3 (F4, F9, F10, F11, F12, F13, F14 -- z-index system, DSN compact, TelemetryCard overflow, CrewPanel positioning, safe-area). Blueprint: `docs/blueprints/2026-04-04_1900_mobile_first_hud_progressive_disclosure.md`. Implementation prompt: `docs/prompts/2026-04-04_1900_mobile_first_hud_progressive_disclosure.md`. |
 | 2026-04-04 18:55 UTC | 4 | Created tracker. F1-F15 logged from frontend display audit. F1-F2: Critical (overflow, stack chaos). F3: High (SpaceWeather no collapse). F4-F9: Medium (overlap, responsive, tooltips, touch, z-index). F10-F15: Low (DSN, events, crew, telemetry, safe-area, dvh). |
+| 2026-04-05 11:35 UTC | 6 | F1-F15 ALL marked Resolved. Code verification confirmed all 3 phases of the implementation prompt were already applied: Phase 1 (F1 chat responsive, F2 progressive disclosure, F15 dvh), Phase 2 (F3 SpaceWeather compact, F5 camera labels, F6/F7 ProgressBar fixes, F8 touch targets), Phase 3 (F9 z-index system, F10 DSN compact, F11 events width, F12 CrewPanel bottom sheet, F13 TelemetryCard overflow, F14 safe-area, F4 resolved by F2). Build passes. Tracker statuses were stale — implementation was completed but tracker never updated. |
 
 ---
 

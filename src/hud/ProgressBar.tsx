@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMission } from '../hooks/useMission';
 import { useMissionStore } from '../store/mission-store';
-import { MILESTONES } from '../data/mission-config';
+import { MILESTONES, MISSION_DURATION_HOURS } from '../data/mission-config';
 
-const TOTAL_MISSION_HOURS = 240;
+const TOTAL_MISSION_HOURS = MISSION_DURATION_HOURS;
 
 export default function ProgressBar() {
   const { progress, totalMs } = useMission();

@@ -3,7 +3,7 @@
 # UI & Visual Regressions (Session 5) -- Findings Tracker
 
 **Created**: 2026-04-04 22:00 UTC
-**Last Updated**: 2026-04-05 02:00 UTC
+**Last Updated**: 2026-04-05 11:25 UTC
 **Origin**: User screenshot review at session 5 start -- 4 screenshots revealing layout, z-index, trajectory, and mobile overflow issues
 **Session**: 5
 **Scope**: HUD layout regressions (ProgressBar overlap/height), trajectory rendering near Moon, and mobile MissionEventsPanel overflow (4 component files, 4 issues)
@@ -17,10 +17,11 @@ Four UI and visual issues identified from user-provided screenshots at the start
 | # | Finding | Type | Severity | Status | Stage | Report |
 |---|---------|------|----------|--------|-------|--------|
 | F1 | ProgressBar overlays AI Chatbot panel | Defect | **High** | Resolved | Resolved | [Report](2026-04-04_2200_ui_visual_regressions_session5.md) |
-| F3 | Trajectory around Moon renders problematic / direction questioned | Defect | **High** | In Progress | RCA Complete | [Report](2026-04-04_2200_ui_visual_regressions_session5.md) |
+| F3 | Trajectory around Moon renders problematic / direction questioned | Defect | **High** | Resolved | Resolved | [Report](2026-04-04_2200_ui_visual_regressions_session5.md) |
 | F2 | ProgressBar sits higher than adjacent telemetry cards | Defect | **Medium** | Resolved | Resolved | [Report](2026-04-04_2200_ui_visual_regressions_session5.md) |
-| F4 | Mobile hamburger menu obscures most of screen | Debt | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-04_2200_ui_visual_regressions_session5.md) |
-| F5 | Trajectory map inset blocks all 3D drag/rotate interaction | Defect | **High** | In Progress | Investigating | [Investigation](../../investigations/2026-04-05_1430_trajectory_map_blocks_orbit_controls.md) |
+| F4 | Mobile hamburger menu obscures most of screen | Debt | **Medium** | Resolved | Resolved | [Report](2026-04-04_2200_ui_visual_regressions_session5.md) |
+| F5 | Trajectory map inset blocks all 3D drag/rotate interaction | Defect | **High** | Resolved | Resolved | [Report](2026-04-04_2200_ui_visual_regressions_session5.md) |
+| F6 | 10 of 19 milestone positions significantly wrong (3rd recurring correction) | Defect | **Critical** | Resolved | Resolved | [Investigation](../../investigations/2026-04-05_1600_milestone_trajectory_position_accuracy.md) |
 
 **Status legend**: `Open` -> `In Progress` -> `Resolved` -> `Verified`
 **Stage legend**: `Open` -> `Investigating` / `Designing` -> `RCA Complete` / `Blueprint Ready` -> `Planned` -> `Implementing` -> `Reviewed` -> `Resolved` -> `Verified`
@@ -100,13 +101,11 @@ F5 is same root cause pattern as F1 -- introduced in the TrajectoryMap commit.
 - [ ] **F3.10**: Code review (-> /forge-review -> Stage: Reviewed)
 - [ ] **F3.11**: Verify: no trajectory gaps, Moon centered in flyby curve, proportional scaling (Stage: Verified)
 
-**Recommended next step**: `/rca-bugfix` with investigation at `docs/investigations/2026-04-05_0700_true_scale_moon_trajectory_clearance.md`
-
-**Status**: In Progress
-**Stage**: Investigating
-**Resolved in session**: --
+**Status**: Resolved
+**Stage**: Resolved
+**Resolved in session**: 5
 **Verified in session**: --
-**Notes**: 7th investigation (DEFINITIVE). The circumcenter algorithm gives the center of the osculating circle, NOT the Moon's gravitational center. JPL Horizons ephemeris confirms the real Moon is 5,034 km from the circumcenter and 8,357 km from the trajectory at perilune. Fix: bundle JPL Horizons lunar ephemeris (37 data points, ~2 KB), interpolate Moon position at simulation time, set Moon sphere to 0.347 su (2x real, proportional with Earth). Key files: `src/components/Moon.tsx` (replace circumcenter with ephemeris lookup), `src/components/Trajectory.tsx` (culling with correct Moon pos), NEW `src/data/moon-ephemeris.ts` (bundled ephemeris + interpolation).
+**Notes**: Fixed in Session 5 (7th investigation, DEFINITIVE). Replaced circumcenter algorithm with bundled JPL Horizons ephemeris (37 geocentric J2000 points, ~2 KB). Moon position now derived from `src/data/moon-ephemeris.ts` via `getMoonFlybyPosition()`. Earth set to true scale (0.637 su). Trajectory clears Moon by 8,357 km with real position data.
 **GitHub Issue**: --
 **Project Item ID**: --
 
@@ -174,13 +173,11 @@ F5 is same root cause pattern as F1 -- introduced in the TrajectoryMap commit.
 - [ ] **F4.4**: Code review (-> /forge-review -> Stage: Reviewed)
 - [ ] **F4.5**: Verify mobile menu size on real device viewports (Stage: Verified)
 
-**Recommended next step**: `/blueprint` with design at `docs/design/2026-04-05_0800_mobile_hamburger_menu.md`
-
-**Status**: Open
-**Stage**: Open
-**Resolved in session**: --
+**Status**: Resolved
+**Stage**: Resolved
+**Resolved in session**: 5
 **Verified in session**: --
-**Notes**: The desktop panel (`sm:w-[320px]`) is not affected. Only mobile layout needs adjustment. Key files: `src/hud/MissionEventsPanel.tsx`, `src/data/mission-config.ts` (19 milestones).
+**Notes**: Fixed in Session 5: reduced `max-h` to 50vh on mobile (`max-h-[50vh] sm:max-h-[70vh]`), compact item styling with conditional spacing, auto-scroll to current milestone when panel opens. Key file: `src/hud/MissionEventsPanel.tsx`.
 **GitHub Issue**: --
 **Project Item ID**: --
 
@@ -205,13 +202,11 @@ F5 is same root cause pattern as F1 -- introduced in the TrajectoryMap commit.
 - [ ] **F5.4**: Code review (-> /forge-review -> Stage: Reviewed)
 - [ ] **F5.5**: Verify drag/rotate/pan works on desktop with trajectory map visible (Stage: Verified)
 
-**Recommended next step**: `/rca-bugfix` with investigation at `docs/investigations/2026-04-05_1430_trajectory_map_blocks_orbit_controls.md`
-
-**Status**: In Progress
-**Stage**: Investigating
-**Resolved in session**: --
+**Status**: Resolved
+**Stage**: Resolved
+**Resolved in session**: 5
 **Verified in session**: --
-**Notes**: Desktop only (wrapper uses `hidden sm:flex`). Introduced in commit `9f3ec74` (most recent). Revert-safe but targeted fix preferred. Same pattern as F1 (flex-1 + pointer-events-auto = invisible overlay). Key file: `src/hud/HUD.tsx` lines 73-75.
+**Notes**: Resolved by removing the TrajectoryMap component entirely (commit `3756f9d`). The wrapper div with `flex-1 pointer-events-auto` was blocking all 3D interaction. Component was deemed to add visual clutter without value.
 **GitHub Issue**: --
 **Project Item ID**: --
 
@@ -223,11 +218,47 @@ F5 is same root cause pattern as F1 -- introduced in the TrajectoryMap commit.
 
 ---
 
+## F6: Milestone Positions Incorrect -- TLI Burn Visual Position (Critical Defect) -- RE-OPENED
+
+**Summary**: 10 of 19 milestone positions were significantly wrong (53% error rate). The most critical: TLI Burn was at T+1.75h (Artemis I profile) instead of T+25.23h (Artemis II phasing orbit perigee). All timings were corrected to NASA-verified values in Session 6. However, user reports TLI Burn is still visually wrong on the trajectory.
+
+**Root cause (timing -- RESOLVED)**: TLI Burn used Artemis I direct-injection timing. Fixed to T+25.23h.
+
+**Root cause (visual -- INVESTIGATING)**: At T+25.23h, the spacecraft is at the phasing orbit perigee (6,589 km from Earth center). The Earth sphere is 6,370 km radius (0.637 su). The TLI marker renders only 0.022 su (220 km) above the Earth sphere surface -- visually overlapping Earth at overview zoom levels. Additionally, the user may perceive the position as wrong because TLI is near Earth (at the perigee loop-back) rather than on the outbound leg toward the Moon.
+
+**Resolution tasks**:
+
+- [x] **F6.1**: Investigation -- identify all 10 wrong timings, cross-reference NASA data (-> /investigate -> Stage: Investigating)
+- [x] **F6.2**: RCA + fix -- correct all 18 milestones, remove TLI Perigee duplicate, fix MISSION_DURATION_DAYS (-> /rca-bugfix -> Stage: RCA Complete -> Resolved)
+- [ ] **F6.3**: Re-investigate -- user reports TLI Burn still visually wrong on trajectory (-> /investigate -> Stage: Investigating)
+- [ ] **F6.4**: RCA + fix for visual position (-> /rca-bugfix -> Stage: TBD)
+
+**Status**: Investigating
+**Stage**: Investigating
+**Resolved in session**: --
+**Verified in session**: --
+**Notes**: Timing fix confirmed correct (T+25.23h matches NASA data). Visual issue: TLI marker at phasing orbit perigee is 0.022 su above Earth sphere -- appears inside Earth at overview zoom. Re-investigation: `docs/investigations/2026-04-05_1800_tli_burn_visual_position.md`.
+**GitHub Issue**: --
+**Project Item ID**: --
+
+**Lifecycle**:
+| Stage | Timestamp | Session | Artifact |
+|-------|-----------|---------|----------|
+| Open | 2026-04-05 16:00 UTC | 6 | [Investigation](../../investigations/2026-04-05_1600_milestone_trajectory_position_accuracy.md) |
+| Resolved | 2026-04-05 16:12 UTC | 6 | Timing fix applied via `/wrought-rca-fix` |
+| Investigating | 2026-04-05 18:00 UTC | 6 | Re-opened. User reports TLI Burn still visually wrong. [Investigation](../../investigations/2026-04-05_1800_tli_burn_visual_position.md) |
+
+---
+
 ## Changelog
 
 | Date | Session | Action |
 |------|---------|--------|
+| 2026-04-05 18:00 UTC | 6 | F6 re-opened: user reports TLI Burn still visually wrong on trajectory. Timing correction (T+25.23h) confirmed correct. Visual issue: marker at phasing orbit perigee (0.659 su) sits only 0.022 su above Earth sphere (0.637 su) -- appears inside Earth at overview zoom. Investigation: `docs/investigations/2026-04-05_1800_tli_burn_visual_position.md`. |
 | 2026-04-05 14:30 UTC | 5 | F5 created + investigated. TrajectoryMap wrapper div (commit `9f3ec74`) uses `flex-1 pointer-events-auto` spanning ~60-70% of viewport, blocking all OrbitControls drag/rotate/pan on desktop. Same class of bug as F1. Investigation: `docs/investigations/2026-04-05_1430_trajectory_map_blocks_orbit_controls.md`. |
+| 2026-04-05 11:25 UTC | 6 | F3 → Resolved (JPL ephemeris replaced circumcenter, moon-ephemeris.ts). F4 → Resolved (max-h-[50vh], compact items, auto-scroll in MissionEventsPanel.tsx). F5 → Resolved (TrajectoryMap component removed entirely, commit `3756f9d`). All fixes were applied in Session 5 but tracker not updated until now. |
+| 2026-04-05 16:00 UTC | 6 | F6 created: 10/19 milestone positions wrong (53% error rate). TLI Burn 23.5h early (Artemis I profile, not Artemis II phasing orbit), Lunar Flyby 6.5h early, Splashdown 22.5h late. Duplicate TLI Perigee entry. 3rd recurring correction attempt. Investigation + RCA complete. |
+| 2026-04-05 16:12 UTC | 6 | F6 → Resolved. All 18 milestones set to NASA-verified timings (TLI Perigee duplicate removed). MISSION_DURATION_DAYS corrected to 9.064 days. ProgressBar TOTAL_MISSION_HOURS now derived from config. Build passes. `/wrought-rca-fix` completed in 1 iteration. |
 | 2026-04-05 07:00 UTC | 5 | F3 investigated DEFINITIVELY (7th time). All 6 prior investigations addressed wrong root cause. The circumcenter algorithm computes the osculating circle center, NOT the Moon's gravitational center -- 5,034 km apart. JPL Horizons ephemeris confirms real Moon position gives 8,357 km trajectory clearance (vs 3,002 km with circumcenter). Fix: replace circumcenter with bundled JPL ephemeris (37 points, ~2 KB), set Moon to 0.347 su (2x proportional). Investigation: `docs/investigations/2026-04-05_0700_true_scale_moon_trajectory_clearance.md`. |
 | 2026-04-05 04:30 UTC | 5 | F3 investigated AGAIN (6th time). Moon position now CORRECT (40.98 su from Earth) since commit `64d94ee`. Actual problem: Moon visual sphere (0.5 su = 5,000 km) is oversized relative to trajectory clearance (0.30 su = 3,000 km). 168 trajectory points culled, creating visible gap. Fix: reduce Moon sphere to 0.25 su, reduce culling to 0.30 su. Investigation: `docs/investigations/2026-04-05_0430_moon_sphere_too_large_trajectory_clipping.md`. |
 | 2026-04-05 02:00 UTC | 5 | F3 investigated AGAIN (5th manifestation). Root cause: `findMaxCurvatureIndex()` selects parking orbit near Earth (curvature 0.0175) instead of lunar flyby (curvature 0.0009). Moon renders at 2.44 su from Earth instead of ~38.44 su. Prior race condition fix was correctly applied but circumcenter input is wrong. Investigation: `docs/investigations/2026-04-05_0200_moon_position_circumcenter_wrong_region.md`. |

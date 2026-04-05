@@ -1,5 +1,6 @@
 export const LAUNCH_EPOCH = new Date('2026-04-01T22:35:00Z');
-export const MISSION_DURATION_DAYS = 10;
+export const MISSION_DURATION_DAYS = 217.53 / 24; // 9.064 days — NASA actual splashdown T+217.53h
+export const MISSION_DURATION_HOURS = MISSION_DURATION_DAYS * 24; // 217.53h
 export const MISSION_END_EPOCH = new Date(LAUNCH_EPOCH.getTime() + MISSION_DURATION_DAYS * 24 * 60 * 60 * 1000);
 
 export const SCALE_FACTOR = 10_000; // 1 Three.js unit = 10,000 km
@@ -25,24 +26,23 @@ export interface Milestone {
 
 export const MILESTONES: Milestone[] = [
   { name: 'Launch', missionElapsedHours: 0, description: 'SLS lifts off from LC-39B, Kennedy Space Center' },
-  { name: 'SRB Separation', missionElapsedHours: 0.035, description: 'Solid rocket boosters jettison at T+2 min' },
-  { name: 'Core Stage Sep', missionElapsedHours: 0.14, description: 'Core stage separates, ICPS takes over' },
-  { name: 'Perigee Raise', missionElapsedHours: 0.25, description: 'ICPS circularizes initial parking orbit' },
-  { name: 'TLI Burn', missionElapsedHours: 1.75, description: 'Translunar Injection — ICPS fires for Moon trajectory' },
-  { name: 'ICPS Separation', missionElapsedHours: 2.5, description: 'Interim Cryogenic Propulsion Stage separates from Orion' },
-  { name: 'OTB-1', missionElapsedHours: 8, description: 'Outbound Trajectory Burn 1 — fine-tune Earth departure' },
-  { name: 'Belt Transit', missionElapsedHours: 5, description: 'Orion transits the Van Allen radiation belts' },
-  { name: 'TLI Perigee', missionElapsedHours: 25, description: 'Phasing orbit perigee — translunar injection burn' },
+  { name: 'SRB Separation', missionElapsedHours: 0.036, description: 'Solid rocket boosters jettison at T+2m08s' },
+  { name: 'Core Stage Sep', missionElapsedHours: 0.138, description: 'Core stage MECO and separation, ICPS takes over' },
+  { name: 'Perigee Raise', missionElapsedHours: 0.817, description: 'ICPS perigee raise burn at T+49 min — orbit to 115 × 1,381 mi' },
+  { name: 'ICPS Separation', missionElapsedHours: 3.40, description: 'ICPS separates after proximity operations demo at T+3h24m' },
+  { name: 'Belt Transit', missionElapsedHours: 3.8, description: 'Orion transits the inner Van Allen radiation belt' },
+  { name: 'TLI Burn', missionElapsedHours: 25.23, description: 'Translunar Injection at phasing orbit perigee — Orion ESM engine, 5m50s burn' },
+  { name: 'OTB-1', missionElapsedHours: 28.2, description: 'Outbound Trajectory Burn 1 — waived, trajectory sufficiently precise' },
   { name: 'Star Tracker Cal', missionElapsedHours: 36, description: 'Navigation star tracker calibration and crew observation' },
   { name: 'MCC-1', missionElapsedHours: 48, description: 'Mid-Course Correction 1 — refine lunar approach trajectory' },
-  { name: 'Lunar Approach', missionElapsedHours: 85, description: 'Entering lunar sphere of influence' },
-  { name: 'Lunar Flyby', missionElapsedHours: 114, description: 'Closest approach ~8,900 km above lunar far side' },
-  { name: 'Return Burn', missionElapsedHours: 130, description: 'Return trajectory correction — target Earth entry corridor' },
+  { name: 'Lunar Approach', missionElapsedHours: 102, description: 'Entering lunar sphere of influence (~66,000 km from Moon)' },
+  { name: 'Lunar Flyby', missionElapsedHours: 120.45, description: 'Closest approach — 6,543 km (4,066 mi) above lunar far side' },
+  { name: 'Return Burn', missionElapsedHours: 139, description: 'Return trajectory correction near lunar SOI exit' },
   { name: 'Return Coast', missionElapsedHours: 144, description: 'Free return coast toward Earth' },
   { name: 'MCC-3', missionElapsedHours: 200, description: 'Final mid-course correction — precision entry targeting' },
-  { name: 'CM/SM Sep', missionElapsedHours: 215, description: 'Crew Module separates from Service Module' },
-  { name: 'Entry Interface', missionElapsedHours: 216, description: 'Orion enters Earth atmosphere at ~40,000 km/h' },
-  { name: 'Splashdown', missionElapsedHours: 240, description: 'Pacific Ocean recovery by USS Portland' },
+  { name: 'CM/SM Sep', missionElapsedHours: 217.0, description: 'Crew Module separates from Service Module' },
+  { name: 'Entry Interface', missionElapsedHours: 217.3, description: 'Orion enters Earth atmosphere at ~40,000 km/h (122 km altitude)' },
+  { name: 'Splashdown', missionElapsedHours: 217.53, description: 'Pacific Ocean splashdown off San Diego — recovery by USS Portland' },
 ];
 
 export function getMissionElapsed(now: Date = new Date()): {

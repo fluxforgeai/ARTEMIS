@@ -56,10 +56,12 @@ The project was inspired by the NASASpaceflight YouTube mission overlay, with th
 - **Interactive 3D Scene** -- Explore a real-time Earth-Moon-Orion scene built with React Three Fiber. Rotate, zoom, and pan freely, or use camera presets (Follow Orion, Earth View, Moon View, Free).
 - **Live Trajectory Data** -- Spacecraft position and velocity interpolated from NASA OEM ephemeris files using degree-8 Lagrange interpolation with binary search (O(log n)) and zero per-frame allocations.
 - **Telemetry HUD** -- Animated readouts for speed (km/h), distance from Earth (km), distance to Moon (km), mission elapsed time, and mission progress percentage. Numbers animate smoothly with spring physics.
-- **AI Mission Chatbot** -- Ask anything about Artemis II. Powered by Google Gemini 2.5 Flash with a curated system prompt of mission facts. 12 quick-answer buttons resolve instantly without an API call.
+- **AI Mission Chatbot** -- Ask anything about Artemis II. Powered by Google Gemini 2.5 Flash with a curated system prompt of mission facts. 12 quick-answer buttons resolve instantly without an API call. Supports multimodal responses: NASA images via NASA Image API, YouTube video embeds, and text with markdown formatting.
+- **Space Weather Alerts** -- Synthetic radiation zone and Kp index alerts. AlertsBanner with auto-dismiss timers. Milestone approach notifications at configurable intervals.
+- **Crew Timeline** -- Crew panel with 4 astronaut profiles. 19 mission milestones verified against OEM trajectory data with auto-scroll to current milestone.
+- **Bloom/Glow Effects** -- Post-processing pipeline via `@react-three/postprocessing` with selective bloom on Orion, Earth atmosphere, and trajectory line.
 - **Deep Space Network Status** -- Live indicators showing which DSN ground stations (Goldstone, Canberra, Madrid) are communicating with Orion.
 - **Camera Presets** -- Four views: Follow Orion (tracks the spacecraft), Earth View (top-down plan view), Moon View (centered on the lunar flyby), and Free (user-controlled orbit).
-- **Mobile Responsive** -- Touch controls adapted for mobile: one-finger pan, two-finger rotate/zoom. HUD uses a compact 2-column grid on small screens.
 - **Bundled Fallback Data** -- Includes a real 3,232-line OEM ephemeris file as a fallback, so the app loads instantly even if NASA's servers are slow.
 
 ## Tech Stack

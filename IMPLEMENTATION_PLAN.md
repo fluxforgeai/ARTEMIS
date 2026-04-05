@@ -815,3 +815,9 @@ Verify after deployment:
 11. **HUD pointer-events conflict.** The HUD overlay covers the entire viewport. Set `pointer-events: none` on the HUD container and `pointer-events: auto` only on interactive elements (buttons, inputs, chat panel). Otherwise, the 3D scene will not receive mouse events.
 
 12. **DSN feed may not list Artemis II.** If no DSN dish is currently communicating with Orion, the XML will not contain an Orion target. Handle gracefully by showing "No DSN contact" state rather than erroring.
+
+13. **Circumcenter ≠ Moon center (Session 5 lesson).** The circumcenter of a trajectory arc is the center of the osculating circle, NOT the gravitational body the trajectory orbits. For the Artemis II lunar flyby, the circumcenter is 5,034 km from the Moon's actual position. Always use real ephemeris data (JPL Horizons) for celestial body positioning, not geometric approximations from trajectory geometry.
+
+14. **Orion distance-adaptive scaling prevents planet-sized sprites.** A fixed-size billboard sprite appears planet-sized in trajectory overview zoom. Use `useFrame` to compute camera distance and lerp the sprite scale (e.g., 1.0x at <5 su to 0.1x at >40 su). Gate label/hover visibility on a distance threshold to avoid per-frame DOM updates.
+
+15. **HUD pointer-events-auto on flex containers blocks 3D interaction.** Applying `pointer-events-auto` to a wrapper `div` (e.g., with `flex-1`) creates an invisible overlay that intercepts all pointer events before they reach the Canvas. Always apply `pointer-events-auto` only to the specific interactive element, not its layout container.

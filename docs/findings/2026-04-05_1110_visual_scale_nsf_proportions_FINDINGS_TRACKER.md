@@ -3,7 +3,7 @@
 # Visual Scale & NSF Proportions — Findings Tracker
 
 **Created**: 2026-04-05 11:10 UTC
-**Last Updated**: 2026-04-05 11:10 UTC
+**Last Updated**: 2026-04-05 11:25 UTC
 **Origin**: Research reverse-engineering NSF Artemis II dashboard proportions (`docs/research/2026-04-05_1100_nsf_trajectory_scale_reverse_engineering.md`)
 **Session**: 5
 **Scope**: Orion sprite scaling, body size proportions, and trajectory view layout to match professional broadcast references
@@ -16,9 +16,9 @@ Three visual proportion issues identified by comparing ARTEMIS tracker against t
 
 | # | Finding | Type | Severity | Status | Stage | Report |
 |---|---------|------|----------|--------|-------|--------|
-| F1 | Orion billboard is planet-sized in trajectory view (94% of Earth diameter) | Gap | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-05_1110_visual_scale_nsf_proportions.md) |
-| F2 | No trajectory map inset (NSF uses always-visible figure-8 overview) | Gap | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-05_1110_visual_scale_nsf_proportions.md) |
-| F3 | Body sizes slightly oversized for trajectory view (2.0x vs NSF ~1.5x) | Gap | **Low** | Open | Open | [Report](2026-04-05_1110_visual_scale_nsf_proportions.md) |
+| F1 | Orion billboard is planet-sized in trajectory view (94% of Earth diameter) | Gap | **Medium** | Resolved | Resolved | [Report](2026-04-05_1110_visual_scale_nsf_proportions.md) |
+| F2 | No trajectory map inset (NSF uses always-visible figure-8 overview) | Gap | **Medium** | Removed | Removed | [Report](2026-04-05_1110_visual_scale_nsf_proportions.md) |
+| F3 | Body sizes slightly oversized for trajectory view (2.0x vs NSF ~1.5x) | Gap | **Low** | Resolved | Resolved | [Report](2026-04-05_1110_visual_scale_nsf_proportions.md) |
 
 **Status legend**: `Open` -> `In Progress` -> `Resolved` -> `Verified`
 **Stage legend**: `Open` -> `Designing` -> `Blueprint Ready` -> `Planned` -> `Implementing` -> `Reviewed` -> `Resolved` -> `Verified`
@@ -51,13 +51,11 @@ Recommended order: F1 (Orion adaptive scaling) -> F3 (body size + culling) -> F2
 - [ ] **F1.4**: Code review (-> /forge-review -> Stage: Reviewed)
 - [ ] **F1.5**: Verify Orion appears as dot in trajectory view, full sprite at close zoom (Stage: Verified)
 
-**Recommended approach**: `/design tradeoff` — evaluate scaling curve, minimum/maximum sizes, transition smoothness
-
-**Status**: Open
-**Stage**: Open
-**Resolved in session**: --
+**Status**: Resolved
+**Stage**: Resolved
+**Resolved in session**: 5
 **Verified in session**: --
-**Notes**: Key file: `src/components/Spacecraft.tsx`. The research suggests scaling from 0.1-0.2 su at >40 su camera distance to full 1.2 su at <5 su distance, with lerp between.
+**Notes**: Fixed in Session 5: distance-adaptive scaling via `useFrame` in `src/components/Spacecraft.tsx`. Lerps scale from 1.0x at <5 su camera distance to 0.1x at >40 su. Label/hover gated on 25 su visibility threshold.
 **GitHub Issue**: --
 **Project Item ID**: --
 
@@ -82,13 +80,11 @@ Recommended order: F1 (Orion adaptive scaling) -> F3 (body size + culling) -> F2
 - [ ] **F2.4**: Code review (-> /forge-review -> Stage: Reviewed)
 - [ ] **F2.5**: Verify inset shows full trajectory with correct proportions (Stage: Verified)
 
-**Recommended approach**: `/design tradeoff` — compare SVG overlay vs second Canvas vs simplified 2D component
-
-**Status**: Open
-**Stage**: Open
-**Resolved in session**: --
+**Status**: Removed
+**Stage**: Removed
+**Resolved in session**: 5
 **Verified in session**: --
-**Notes**: New component `src/hud/TrajectoryMap.tsx` or second `<Canvas>` in `src/App.tsx`. This is optional but high-value for visual polish.
+**Notes**: Built as `src/hud/TrajectoryMap.tsx` in Session 5, then deliberately removed (commit `3756f9d`). Added visual clutter without interactivity, and the wrapper div blocked 3D drag/rotate interaction (F5 in UI Regressions tracker).
 **GitHub Issue**: --
 **Project Item ID**: --
 
@@ -112,13 +108,11 @@ Recommended order: F1 (Orion adaptive scaling) -> F3 (body size + culling) -> F2
 - [ ] **F3.3**: Implement changes (Stage: Implementing -> Resolved)
 - [ ] **F3.4**: Verify bodies are visible but not dominating trajectory view (Stage: Verified)
 
-**Recommended approach**: `/design impact` — assess impact of body size reduction on culling, hover cards, labels
-
-**Status**: Open
-**Stage**: Open
-**Resolved in session**: --
+**Status**: Resolved
+**Stage**: Resolved
+**Resolved in session**: 5
 **Verified in session**: --
-**Notes**: Depends on F1 (Orion scaling). If Orion is fixed first, body size reduction becomes more impactful. Key files: `src/components/Earth.tsx`, `src/components/Moon.tsx`, `src/components/Trajectory.tsx`.
+**Notes**: Fixed in Session 5: Earth reduced to true scale (0.637 su) in `src/components/Earth.tsx`. Emissive intensity increased 2.0→3.5 to compensate for smaller size. Moon set via JPL ephemeris with proportional sizing. Trajectory no longer passes through Earth sphere.
 **GitHub Issue**: --
 **Project Item ID**: --
 
@@ -134,6 +128,7 @@ Recommended order: F1 (Orion adaptive scaling) -> F3 (body size + culling) -> F2
 | Date | Session | Action |
 |------|---------|--------|
 | 2026-04-05 11:10 UTC | 5 | Created tracker. F1-F3 logged from NSF trajectory scale research. F1: Medium Gap (Orion billboard). F2: Medium Gap (trajectory inset). F3: Low Gap (body sizes). |
+| 2026-04-05 11:25 UTC | 6 | F1 → Resolved (distance-adaptive Orion scaling in Spacecraft.tsx). F2 → Removed (TrajectoryMap built then deliberately removed — visual clutter, blocked 3D drag). F3 → Resolved (Earth true scale 0.637 su). All fixes were applied in Session 5 but tracker not updated until now. |
 
 ---
 

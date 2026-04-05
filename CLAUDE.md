@@ -10,7 +10,7 @@
 - ARCHITECTURE.md -- System diagram, tech stack, design decisions
 - PRD.md -- Requirements, user stories, risks
 - IMPLEMENTATION_PLAN.md -- 8-phase build guide
-- docs/findings/2026-04-03_1054_artemis_ii_live_visualization_FINDINGS_TRACKER.md -- F1 tracker (Resolved)
+- docs/findings/ -- 9 Findings Trackers (see All Trackers below)
 
 ## CI/CD — GitHub Actions
 
@@ -73,5 +73,31 @@ session_docs: []
 
 ---
 
-**Last Updated**: 2026-04-05
+**Last Updated**: 2026-04-05 (Session 6 start)
 **Last Session**: Session 5 -- UI regressions (F1-F4), Moon position definitive fix (7 investigations → JPL ephemeris), Earth true scale, Orion distance-adaptive scaling, milestone audit (all 19 verified against OEM), 6 Session 4 review warnings resolved, trajectory map inset (built then removed). 18 commits, 61 files, ~8400 lines.
+
+## All Trackers (as of Session 6 start)
+
+| Tracker | Findings | Status |
+|---------|----------|--------|
+| Artemis II Live Visualization | F1-F3 | All Verified |
+| Camera & UX Refinement | F1-F2 | All Verified |
+| Multimodal Chatbot | F1 | Verified |
+| Chatbot Security & Quality | F1-F10 | All Verified |
+| Post-MVP Visual & Data Features | F1-F3 | All Resolved |
+| Post-MVP Review Warnings | F1-F6 | All Resolved (Session 5) |
+| Visual Scale & NSF Proportions | F1-F3 | F1 Resolved, F2 Removed, F3 Resolved |
+| UI & Visual Regressions (Session 5) | F1-F5 | All Resolved |
+| Frontend Display & Mobile | F1-F15 | All Resolved |
+
+**Totals**: 51 findings across 9 trackers. **All 51 resolved/verified. Zero open findings.**
+
+## Known Limitations
+
+- Earth/Moon rendered as 3D spheres with equirectangular textures (no atmosphere shader or day/night terminator)
+- Orion rendered as billboard sprite with distance-adaptive scaling (not a 3D model)
+- Gemini image generation returns errors — chatbot falls back to NASA Image search for visual requests
+- Moon position uses bundled JPL ephemeris (static for April 2-11 2026 window — not live)
+- Mobile responsiveness implemented (progressive disclosure, responsive sizing, touch targets, z-index system) but not visually verified on real devices
+- No safe-area-inset support for notched devices
+- No dynamic viewport height (100vh not 100dvh)

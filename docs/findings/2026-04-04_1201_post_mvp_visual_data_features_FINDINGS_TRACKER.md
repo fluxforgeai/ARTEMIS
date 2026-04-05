@@ -3,7 +3,7 @@
 # Post-MVP Visual & Data Features — Findings Tracker
 
 **Created**: 2026-04-04 12:01 UTC
-**Last Updated**: 2026-04-04 12:15 UTC
+**Last Updated**: 2026-04-05 11:25 UTC
 **Origin**: Post-MVP feature analysis — Priority 1 items from Session 3 handoff
 **Session**: 4
 **Scope**: Bloom/glow visual effects, crew timeline display, space weather alerts
@@ -89,9 +89,9 @@ F3 (Space Weather) ── independent, new data layer + HUD + optional 3D overla
 
 **Recommended approach**: `/plan` using `docs/prompts/2026-04-04_1215_crew_timeline_display.md`
 
-**Status**: In Progress
-**Stage**: Blueprint Ready
-**Resolved in session**: —
+**Status**: Resolved
+**Stage**: Resolved
+**Resolved in session**: 4
 **Verified in session**: —
 **Notes**: Data layer complete — pure UI work. Blueprint specifies Option A (Integrated Timeline): milestone markers on ProgressBar + CrewPanel dropdown. 1 new file, 2 modified files.
 **GitHub Issue**: —
@@ -123,9 +123,9 @@ F3 (Space Weather) ── independent, new data layer + HUD + optional 3D overla
 
 **Recommended approach**: `/design from-scratch F3 space weather alert system`
 
-**Status**: In Progress
-**Stage**: Blueprint Ready
-**Resolved in session**: --
+**Status**: Resolved
+**Stage**: Resolved
+**Resolved in session**: 4
 **Verified in session**: --
 **Notes**: Broadest scope. Alert infra serves F2 milestone notifications too. Phased: synthetic first, live API overlay second. Discovered existing `api/donki.ts` route (unused).
 **GitHub Issue**: --
@@ -149,6 +149,7 @@ F3 (Space Weather) ── independent, new data layer + HUD + optional 3D overla
 | 2026-04-04 12:15 UTC | 4 | F1 stage → Blueprint Ready. Blueprint + implementation prompt created. |
 | 2026-04-04 12:15 UTC | 4 | F2 stage → Blueprint Ready. Blueprint + implementation prompt created. |
 | 2026-04-04 12:15 UTC | 4 | F3 stage → Blueprint Ready. Blueprint + implementation prompt created (Phase 1: synthetic + alert infrastructure). |
+| 2026-04-05 11:25 UTC | 6 | F2 → Resolved (crew timeline implemented in Session 4). F3 → Resolved (space weather alerts implemented in Session 4). Individual tracker sections were stale — overview table was correct but individual sections showed Blueprint Ready. |
 
 ---
 

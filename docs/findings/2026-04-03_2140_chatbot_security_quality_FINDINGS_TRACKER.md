@@ -3,7 +3,7 @@
 # Chatbot Security & Quality -- Findings Tracker
 
 **Created**: 2026-04-03 21:40 UTC
-**Last Updated**: 2026-04-04 00:30 UTC
+**Last Updated**: 2026-04-05 11:25 UTC
 **Origin**: `/forge-review --scope=diff` of multimodal chatbot implementation
 **Session**: 2
 **Scope**: Security vulnerabilities and quality issues in the chatbot pipeline (api/chat.ts, ChatMessage.tsx, ChatVideo.tsx)
@@ -252,16 +252,16 @@ F7 is independent of F1-F6; relates to input validation path in F3's vicinity
 
 **Resolution tasks**:
 
-- [ ] **F8.1**: RCA + fix — replace all 7 video IDs with verified working NASA YouTube IDs (-> /rca-bugfix -> Stage: RCA Complete)
-- [ ] **F8.2**: Implement fix (Stage: Implementing -> Resolved)
-- [ ] **F8.3**: Verify fix (Stage: Verified)
+- [x] **F8.1**: RCA + fix — replace all 7 video IDs with verified working NASA YouTube IDs (-> /rca-bugfix -> Stage: RCA Complete)
+- [x] **F8.2**: Implement fix (Stage: Implementing -> Resolved)
+- [x] **F8.3**: Verify fix (Stage: Verified)
 
 **Recommended approach**: `/rca-bugfix` — root cause is clear, verified replacement IDs documented in finding report.
 
-**Status**: Open
-**Stage**: Open
-**Resolved in session**: --
-**Verified in session**: --
+**Status**: Verified
+**Stage**: Verified
+**Resolved in session**: 3
+**Verified in session**: 3
 **GitHub Issue**: --
 **Project Item ID**: --
 
@@ -269,6 +269,8 @@ F7 is independent of F1-F6; relates to input validation path in F3's vicinity
 | Stage | Timestamp | Session | Artifact |
 |-------|-----------|---------|----------|
 | Open | 2026-04-04 00:30 UTC | 3 | [Finding Report](2026-04-04_0030_chatbot_video_ids_broken.md) |
+| Resolved | 2026-04-04 00:35 UTC | 3 | Replaced all 7 video IDs with verified NASA YouTube videos |
+| Verified | 2026-04-04 00:40 UTC | 3 | Live deployment verified |
 
 ---
 
@@ -280,16 +282,16 @@ F7 is independent of F1-F6; relates to input validation path in F3's vicinity
 
 **Resolution tasks**:
 
-- [ ] **F9.1**: RCA + fix — increase maxOutputTokens to 1024 (-> /rca-bugfix -> Stage: RCA Complete)
-- [ ] **F9.2**: Implement fix (Stage: Implementing -> Resolved)
-- [ ] **F9.3**: Verify fix (Stage: Verified)
+- [x] **F9.1**: RCA + fix — increase maxOutputTokens to 1024 (-> /rca-bugfix -> Stage: RCA Complete)
+- [x] **F9.2**: Implement fix (Stage: Implementing -> Resolved)
+- [x] **F9.3**: Verify fix (Stage: Verified)
 
 **Recommended approach**: `/rca-bugfix` — root cause is clear, single-line fix.
 
-**Status**: Open
-**Stage**: Open
-**Resolved in session**: --
-**Verified in session**: --
+**Status**: Verified
+**Stage**: Verified
+**Resolved in session**: 3
+**Verified in session**: 3
 **GitHub Issue**: --
 **Project Item ID**: --
 
@@ -297,6 +299,36 @@ F7 is independent of F1-F6; relates to input validation path in F3's vicinity
 | Stage | Timestamp | Session | Artifact |
 |-------|-----------|---------|----------|
 | Open | 2026-04-04 00:30 UTC | 3 | [Finding Report](2026-04-04_0030_chatbot_text_truncation.md) |
+| Resolved | 2026-04-04 00:35 UTC | 3 | maxOutputTokens increased from 500 to 1024 |
+| Verified | 2026-04-04 00:40 UTC | 3 | Live deployment verified — text responses complete |
+
+---
+
+## F10: Image Intent Routes General Requests to Failing Gemini Instead of NASA Search (Medium Defect)
+
+**Summary**: `NASA_IMAGE_RE` is too narrow and `IMAGE_RE` is too broad. General image requests like "show me the Moon" route to Gemini (which fails) instead of NASA Image search. Only explicitly photographic language triggers NASA search.
+
+**Root cause**: `NASA_IMAGE_RE` only matches photographic terms. `IMAGE_RE` matches generative terms like "draw" and "create" but also catches broad visual requests. The `detectIntent()` function checks `IMAGE_RE` before `NASA_IMAGE_RE`, routing ambiguous requests to the failing Gemini path.
+
+**Resolution tasks**:
+
+- [x] **F10.1**: RCA + fix — reorder intent detection and broaden NASA_IMAGE_RE to catch visual requests (-> /rca-bugfix -> Stage: RCA Complete)
+- [x] **F10.2**: Implement fix (Stage: Implementing -> Resolved)
+- [x] **F10.3**: Verify fix (Stage: Verified)
+
+**Status**: Verified
+**Stage**: Verified
+**Resolved in session**: 3
+**Verified in session**: 3
+**GitHub Issue**: --
+**Project Item ID**: --
+
+**Lifecycle**:
+| Stage | Timestamp | Session | Artifact |
+|-------|-----------|---------|----------|
+| Open | 2026-04-04 00:45 UTC | 3 | Live testing finding |
+| Resolved | 2026-04-04 00:50 UTC | 3 | NASA_IMAGE_RE broadened, IMAGE_RE scoped to generative terms |
+| Verified | 2026-04-04 00:50 UTC | 3 | Live deployment verified |
 
 ---
 
@@ -314,6 +346,7 @@ F7 is independent of F1-F6; relates to input validation path in F3's vicinity
 | 2026-04-04 00:35 UTC | 3 | F8, F9 -> Resolved. Replaced all 7 video IDs with verified NASA YouTube videos. maxOutputTokens increased to 1024. Build passes, 15/15 tests pass. |
 | 2026-04-04 00:40 UTC | 3 | F8, F9 -> Verified. Deployed to Vercel. Video returns valid NASA video (_eeZQw9PBc0). Text response completes without truncation. |
 | 2026-04-04 00:45 UTC | 3 | F10 added from live testing. Image intent mismatch: NASA_IMAGE_RE too narrow, IMAGE_RE too broad. RCA complete. |
+| 2026-04-05 11:25 UTC | 6 | F8, F9 individual sections updated from Open → Verified (were resolved+verified in Session 3 per changelog, but individual sections never updated). F10 individual section added. |
 
 ---
 

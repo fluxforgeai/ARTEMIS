@@ -210,12 +210,15 @@ The visualization uses the **J2000 (EME2000) Earth-centered inertial frame**, ma
 - **Reference frame**: Earth Mean Equator and Equinox of J2000.0
 - **Units in OEM data**: kilometers (position), kilometers per second (velocity)
 - **Scale factor in 3D scene**: **1 unit = 10,000 km**
-  - Earth radius (~6,371 km) renders as ~0.64 units
+  - Earth radius (~6,371 km) renders as ~0.637 units
   - Moon distance (~384,400 km) renders as ~38.4 units
   - Lunar flyby altitude (~6,600 km beyond far side) is visually discernible
-- **Earth sphere**: radius = 1 unit (slight artistic exaggeration for visibility, true scale would be 0.64)
-- **Moon sphere**: radius = 0.27 units (to-scale ratio with the Earth sphere)
+- **Earth sphere**: radius = 0.637 units (true to-scale). Emissive intensity 3.5 to compensate for small apparent size.
+- **Moon sphere**: positioned via bundled JPL Horizons ephemeris (37 geocentric J2000 data points at 6-hour intervals, April 2-11 2026). Linear interpolation at simulation time. See `src/data/moon-ephemeris.ts`.
+- **Orion sprite**: distance-adaptive scaling — lerps from 1.0x at close zoom (<5 su) to 0.1x at overview zoom (>40 su). Label/hover visibility gated at 25 su.
 - **Conversion**: `scenePosition = oemPosition / 10000`
+
+> **Design Decision (Session 5)**: Moon position was initially computed via a circumcenter algorithm (center of the osculating circle of the trajectory arc). After 7 investigations, this was proven incorrect — the osculating circle center is 5,034 km from the Moon's actual gravitational center. Replaced with bundled JPL Horizons ephemeris data, which gives 8,357 km trajectory clearance at perilune.
 
 ---
 
@@ -242,28 +245,36 @@ artemis-tracker/
 |   |   |-- DataDriver.tsx          # useFrame interpolation (renders null)
 |   |   +-- CameraController.tsx    # OrbitControls + camera preset animations
 |   |-- hud/
-|   |   |-- HUD.tsx                 # Overlay container (absolute, pointer-events: none)
+|   |   |-- HUD.tsx                 # Overlay container (absolute, pointer-events: none, isolate stacking)
 |   |   |-- TelemetryCard.tsx       # Animated number counter card
 |   |   |-- MissionClock.tsx        # M+ DD:HH:MM:SS live counter
-|   |   |-- ProgressBar.tsx         # Mission progress percentage bar
+|   |   |-- ProgressBar.tsx         # Mission progress percentage bar with 19 milestone markers
 |   |   |-- DSNStatus.tsx           # Antenna status indicators
-|   |   +-- CameraControls.tsx      # Camera preset buttons
+|   |   |-- CameraControls.tsx      # Camera preset buttons
+|   |   |-- MissionEventsPanel.tsx  # Hamburger menu with 19 milestones, auto-scroll
+|   |   |-- CrewPanel.tsx           # Crew dropdown (4 astronauts)
+|   |   |-- SpaceWeatherPanel.tsx   # Kp index, solar wind, radiation zone indicators
+|   |   |-- AlertsBanner.tsx        # Auto-dismiss alert banner (timer per alert)
+|   |   +-- AlertItem.tsx           # Individual alert display
 |   |-- chat/
 |   |   |-- ChatPanel.tsx           # Floating chat panel with toggle button
-|   |   |-- ChatMessage.tsx         # User/assistant message bubble
+|   |   |-- ChatMessage.tsx         # User/assistant message bubble (DOMPurify sanitized)
+|   |   |-- ChatVideo.tsx           # YouTube video embed (videoId validated)
 |   |   +-- QuickAnswers.tsx        # Clickable quick-answer pill buttons
 |   |-- data/
 |   |   |-- oem-parser.ts           # CCSDS OEM file parser (~50 lines)
 |   |   |-- interpolator.ts         # Lagrange interpolation (degree 8)
 |   |   |-- dsn-parser.ts           # DSN XML parser (DOMParser-based)
-|   |   |-- mission-config.ts       # Launch epoch, crew, milestones, phases
+|   |   |-- mission-config.ts       # Launch epoch, crew (4), milestones (19), phases
+|   |   |-- moon-ephemeris.ts       # Bundled JPL Horizons Moon ephemeris (37 J2000 points)
 |   |   +-- artemis-knowledge.ts    # System prompt content + quick-answer Q&A pairs
 |   |-- hooks/
 |   |   |-- useOEM.ts               # Fetch /api/oem, parse, store, poll every 5 min
 |   |   |-- useDSN.ts               # Fetch /api/dsn, parse XML, poll every 30 sec
 |   |   |-- useSpacecraft.ts        # Derived metrics (speed, earthDist, moonDist)
 |   |   |-- useMission.ts           # Elapsed time, current phase, progress %
-|   |   +-- useChat.ts              # Chat state, message history, quick-answer resolution
+|   |   |-- useChat.ts              # Chat state, message history, quick-answer resolution
+|   |   +-- useAlerts.ts            # 2 effects: weather alerts + milestone notifications
 |   |-- store/
 |   |   +-- mission-store.ts        # Zustand store (OEM, DSN, spacecraft, camera, chat)
 |   |-- App.tsx                     # Root layout: Canvas + HUD + ChatPanel
