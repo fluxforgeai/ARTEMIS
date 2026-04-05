@@ -67,6 +67,12 @@ export default function MissionEventsPanel() {
     }
   }, [isOpen]);
 
+  const handleDismiss = useCallback((id: string) => {
+    const timer = timers.current.get(id);
+    if (timer) { clearTimeout(timer); timers.current.delete(id); }
+    dismissAlert(id);
+  }, [dismissAlert]);
+
   const handleMilestoneHover = useCallback((hours: number) => {
     setHoveredMilestoneHours(hours);
   }, [setHoveredMilestoneHours]);
@@ -129,7 +135,7 @@ export default function MissionEventsPanel() {
                           <div className="text-gray-300 mt-0.5">{alert.message}</div>
                         </div>
                         <button
-                          onClick={() => dismissAlert(alert.id)}
+                          onClick={() => handleDismiss(alert.id)}
                           className="text-gray-500 hover:text-white text-sm leading-none"
                         >
                           ×

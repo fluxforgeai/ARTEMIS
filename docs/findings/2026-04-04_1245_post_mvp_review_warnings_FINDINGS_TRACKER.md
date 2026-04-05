@@ -3,7 +3,7 @@
 # Post-MVP Review Warnings -- Findings Tracker
 
 **Created**: 2026-04-04 12:45 UTC
-**Last Updated**: 2026-04-04 12:45 UTC
+**Last Updated**: 2026-04-05 13:00 UTC
 **Origin**: `/forge-review --scope=diff` of post-MVP F1-F3 implementation (bloom, crew timeline, space weather)
 **Session**: 4
 **Scope**: Timer management, effect coupling, selector granularity, and state management issues in the space weather and alerts subsystem
@@ -16,12 +16,12 @@ Six warnings from the 4-agent code review of the post-MVP feature implementation
 
 | # | Finding | Type | Severity | Status | Stage | Report |
 |---|---------|------|----------|--------|-------|--------|
-| F1 | AlertsBanner timer management is fragile | Debt | **Medium** | Open | Open | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
-| F2 | useAlerts subscribes to entire spaceWeather object | Debt | **Medium** | Open | Open | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
-| F3 | useAlerts milestone checking coupled to spaceWeather + impure time source | Debt | **Medium** | Open | Open | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
-| F4 | useAlerts firedMilestones ref never cleared | Defect | **Low** | Open | Open | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
-| F5 | SpaceWeatherPanel uses 4 separate Zustand selectors | Debt | **Low** | Open | Open | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
-| F6 | addAlert dedup has subtle race condition | Defect | **Low** | Open | Open | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
+| F1 | AlertsBanner timer management is fragile | Debt | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
+| F2 | useAlerts subscribes to entire spaceWeather object | Debt | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
+| F3 | useAlerts milestone checking coupled to spaceWeather + impure time source | Debt | **Medium** | In Progress | Blueprint Ready | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
+| F4 | useAlerts firedMilestones ref never cleared | Defect | **Low** | In Progress | Blueprint Ready | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
+| F5 | SpaceWeatherPanel uses 4 separate Zustand selectors | Debt | **Low** | In Progress | Blueprint Ready | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
+| F6 | addAlert dedup has subtle race condition | Defect | **Low** | In Progress | Blueprint Ready | [Report](2026-04-04_1245_post_mvp_review_warnings.md) |
 
 **Status legend**: `Open` -> `In Progress` -> `Resolved` -> `Verified`
 **Stage legend**: `Open` -> `Designing` / `Investigating` -> `Blueprint Ready` / `RCA Complete` -> `Planned` -> `Implementing` -> `Reviewed` -> `Resolved` -> `Verified`

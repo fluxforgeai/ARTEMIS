@@ -109,7 +109,7 @@ export const useMissionStore = create<MissionStore>((set) => ({
       // Dedup: skip if same type+message within 60s
       const isDuplicate = prev.alerts.some(
         (a) => a.type === alert.type && a.message === alert.message &&
-          Date.now() - a.timestamp < 60_000
+          alert.timestamp - a.timestamp < 60_000
       );
       if (isDuplicate) return prev;
 
