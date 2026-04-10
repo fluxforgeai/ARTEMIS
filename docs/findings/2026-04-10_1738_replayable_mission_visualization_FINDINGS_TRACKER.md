@@ -189,33 +189,34 @@ F1 (Virtual clock + replay) — single monolithic feature with these sub-compone
 
 ## F5: Moon Renders at Real-Time Ephemeris Position Instead of Sim Time (High Defect)
 
-**Summary**: DataDriver passes unclamped `Date.now()` (LIVE mode) to `getMoonPosition()`. The Moon orbited ~48 degrees since the flyby, placing it ~32 su from the trajectory turnaround. User sees empty space where the Moon should be.
+**Summary**: In LIVE mode, `getMoonPosition(simTimeRef.current)` places the Moon at its current ephemeris position (T+214.5h), which is 32 su from the trajectory turnaround where the flyby occurred (T+120.45h). The user sees the Moon sphere far from the trajectory curve, and the trajectory curves around empty space -- appearing as "2 moons."
 
-**Root cause**: F1 migration moved Moon position from static `getMoonFlybyPosition()` in Moon.tsx to dynamic `getMoonPosition(simTimeRef.current)` in DataDriver. In LIVE mode, `simTimeRef.current = Date.now()` is unclamped, producing a Moon position that diverges from the trajectory.
+**Root cause**: F1 migration moved Moon position from static `getMoonFlybyPosition()` in Moon.tsx to dynamic `getMoonPosition(simTimeRef.current)` in DataDriver. In LIVE mode at T+214h, the Moon has orbited ~52 degrees since the flyby, placing it 318,472 km (31.85 su) from the trajectory turnaround. Physically correct but visually incoherent -- the trajectory is static and still curves around the flyby position.
 
 **Resolution tasks**:
 
-- [ ] **F5.1**: Investigate — confirm position values and rendering behavior (-> /investigate)
+- [x] **F5.1**: Investigate -- confirm position values and rendering behavior (-> /investigate)
 - [ ] **F5.2**: RCA + fix design (-> /rca-bugfix)
 - [ ] **F5.3**: Implementation plan (-> /plan)
 - [ ] **F5.4**: Implement fix (-> /wrought-rca-fix)
 - [ ] **F5.5**: Code review (-> /forge-review)
 - [ ] **F5.6**: Verify fix in production
 
-**Recommended approach**: `/rca-bugfix` — cause is clear. Use clamped `simEpochMs` from the store (or compute clamped value from `simTimeRef.current`) for `getMoonPosition()` so the Moon position tracks the simulated time, not wall-clock time.
+**Recommended approach**: `/rca-bugfix` -- In LIVE mode, use the flyby epoch (2026-04-06T23:06Z) for Moon position so it aligns with the trajectory turnaround. In REPLAY/SIM mode, continue using simTimeRef.current for dynamic Moon animation. Single change in DataDriver.tsx:73.
 
-**Status**: Open
-**Stage**: Open
-**Resolved in session**: —
-**Verified in session**: —
-**Notes**: The Moon IS rendering (moonDist telemetry shows 345,458 km) but ~32 su from the trajectory turnaround due to real Moon orbital motion since flyby. The incident at `docs/incidents/2026-04-10_2017_moon_missing_from_visualization.md` and hotfix `f5aea67` addressed the double SCALE_FACTOR bug but not this position divergence.
-**GitHub Issue**: —
-**Project Item ID**: —
+**Status**: In Progress
+**Stage**: Investigating
+**Resolved in session**: --
+**Verified in session**: --
+**Notes**: The Moon IS rendering (moonDist telemetry shows 345,458 km) but ~32 su from the trajectory turnaround due to real Moon orbital motion since flyby. The incident at `docs/incidents/2026-04-10_2017_moon_missing_from_visualization.md` and hotfix `f5aea67` addressed the double SCALE_FACTOR bug but not this position divergence. Investigation confirmed: in LIVE mode use flyby epoch for Moon position; in REPLAY/SIM use simTimeRef for dynamic animation.
+**GitHub Issue**: --
+**Project Item ID**: --
 
 **Lifecycle**:
 | Stage | Timestamp | Session | Artifact |
 |-------|-----------|---------|----------|
 | Open | 2026-04-10 20:51 UTC | 9 | [Finding Report](2026-04-10_2051_moon_position_drift.md) |
+| Investigating | 2026-04-10 23:00 UTC | 10 | [Investigation](../investigations/2026-04-10_2300_two_moons_ephemeris_vs_trajectory.md) |
 
 ---
 
@@ -226,7 +227,8 @@ F1 (Virtual clock + replay) — single monolithic feature with these sub-compone
 | 2026-04-10 17:38 UTC | 8 | Created tracker. F1 logged (High Gap). Research at `docs/research/2026-04-10_1400_replayable_mission_visualization.md`. |
 | 2026-04-10 18:30 UTC | 8 | F1 stage -> Reviewed (forge-review BLOCKED on C1). F2-F4 added from review `docs/reviews/2026-04-10_1830_diff.md`. F2 Critical Defect (circular import), F3 Medium Defect (milestone skipping), F4 Medium Defect (clock drift). |
 | 2026-04-10 21:00 UTC | 9 | F1 stage -> Verified (second review LGTM, blocker F2 resolved). F2/F3/F4 stages -> Verified (code confirmed fixed, build passes). Investigation: `docs/investigations/2026-04-10_2100_replay_review_defects_f2_f3_f4.md`. Tracker detail sections updated (were stale -- same pattern as Session 6). |
-| 2026-04-10 20:51 UTC | 9 | F5 logged (High Defect). Moon position drift from F1 migration — user screenshot confirms Moon invisible at trajectory turnaround. |
+| 2026-04-10 20:51 UTC | 9 | F5 logged (High Defect). Moon position drift from F1 migration -- user screenshot confirms Moon invisible at trajectory turnaround. |
+| 2026-04-10 23:00 UTC | 10 | F5 stage -> Investigating. Investigation confirmed: Moon at T+214h ephemeris position is 32 su from trajectory turnaround (flyby at T+120h). Fix: use flyby epoch for Moon in LIVE mode, simTimeRef in REPLAY/SIM. Report: `docs/investigations/2026-04-10_2300_two_moons_ephemeris_vs_trajectory.md` |
 
 ---
 

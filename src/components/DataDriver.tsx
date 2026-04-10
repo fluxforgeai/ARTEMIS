@@ -9,6 +9,7 @@ import { getMoonPosition } from '../data/moon-ephemeris';
 export const spacecraftPosition = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0 };
 
 const STORE_UPDATE_INTERVAL = 250; // Throttle store updates to ~4Hz
+const FLYBY_EPOCH_MS = new Date('2026-04-06T23:06:00Z').getTime();
 
 /**
  * Invisible component that runs inside Canvas to drive spacecraft state.
@@ -69,8 +70,10 @@ export default function DataDriver() {
       interpolated.x ** 2 + interpolated.y ** 2 + interpolated.z ** 2
     );
 
-    // Compute Moon position first — used for both moonDist and store write
-    const moonPos = getMoonPosition(simTimeRef.current);
+    // LIVE: Moon at flyby position (aligns with trajectory turnaround)
+    // REPLAY/SIM: Moon animates with sim time (dynamic ephemeris)
+    const moonTime = mode === 'live' ? FLYBY_EPOCH_MS : simTimeRef.current;
+    const moonPos = getMoonPosition(moonTime);
     // moonPos is in scene units — convert back to km for distance calc
     const dx = interpolated.x - moonPos[0] * SCALE_FACTOR;
     const dy = interpolated.y - moonPos[1] * SCALE_FACTOR;
