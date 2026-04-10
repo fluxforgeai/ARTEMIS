@@ -26,3 +26,4 @@ NEXT_SESSION_PROMPT_*.md
 .claude/wrought-loop-state.json
 .vercel
 .DS_Store
+.env*.local

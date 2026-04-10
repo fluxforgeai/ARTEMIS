@@ -3,7 +3,7 @@
 # Chatbot Security & Quality -- Findings Tracker
 
 **Created**: 2026-04-03 21:40 UTC
-**Last Updated**: 2026-04-06 18:00 UTC
+**Last Updated**: 2026-04-10 12:45 UTC
 **Origin**: `/forge-review --scope=diff` of multimodal chatbot implementation
 **Session**: 2
 **Scope**: Security vulnerabilities and quality issues in the chatbot pipeline (api/chat.ts, ChatMessage.tsx, ChatVideo.tsx)
@@ -27,8 +27,10 @@ Tracking security and quality remediation for the multimodal chatbot, sourced fr
 | F9 | Text responses truncated mid-sentence — maxOutputTokens too low | Defect | **Medium** | Verified | Verified | [Report](2026-04-04_0030_chatbot_text_truncation.md) |
 | F10 | Image intent routes general requests to failing Gemini instead of NASA search | Defect | **Medium** | Verified | Verified | [Report](2026-04-04_0045_chatbot_image_intent_mismatch.md) |
 | F11 | Chatbot provides limited information — stale system prompt, wrong phase boundaries, no web search | Gap | **Medium** | Resolved | Resolved | [Investigation](../investigations/2026-04-06_1430_chatbot_llm_model_upgrade.md) |
-| F12 | No fetch timeout on external API calls | Gap | **Medium** | Open | Open | [Report](2026-04-06_1656_fetch_timeout_missing.md) |
+| F12 | No fetch timeout on external API calls | Gap | **Medium** | Resolved | Resolved | [Report](2026-04-06_1656_fetch_timeout_missing.md) |
 | F13 | Search grounding response discarded -- no citations, no sources, quick answer over-matching | Defect | **High** | Resolved | Resolved | [Investigation](../investigations/2026-04-06_1800_chatbot_web_search_upgrade.md) |
+| F14 | Chatbot intermittent API failure — Gemini 500s with no retry, generic error UX | Defect | **High** | Resolved | Resolved | [RCA](../RCAs/2026-04-10_1225_chatbot_intermittent_api_failure.md) |
+| F15 | Cumulative 31s worst-case latency across retry chain | Debt | **Medium** | Resolved | Resolved | [RCA](../RCAs/2026-04-10_1300_retry_chain_cumulative_latency.md) |
 
 **Status legend**: `Open` -> `In Progress` -> `Resolved` -> `Verified`
 **Stage legend**: `Open` -> `Investigating` / `Designing` -> `RCA Complete` / `Blueprint Ready` -> `Planned` -> `Implementing` -> `Reviewed` -> `Resolved` -> `Verified`
@@ -437,6 +439,70 @@ F12 (fetch timeout) is independent of all other findings; affects same file (api
 
 ---
 
+## F14: Chatbot Intermittent API Failure — Gemini 500s with No Retry, Generic Error UX (High Defect)
+
+**Summary**: The ARTEMIS AI chatbot intermittently returns "Sorry, I could not process your question right now" to users. The Gemini `gemini-3-flash-preview` API returns intermittent 500 errors (~33% observed failure rate). There is no retry logic in the API handler — a single failed request immediately returns an error. The client-side error message is generic and does not indicate the transient nature of the failure. This compounds with F12 (no fetch timeout, still Open).
+
+**Root cause**: Three compounding issues: (1) Gemini preview model intermittent 500 errors, (2) no retry-with-backoff in `generateTextResponse()` for transient 500/503 errors, (3) generic client-side error message that does not encourage retry.
+
+**Resolution tasks**:
+
+- [x] **F14.1**: Investigate — confirm intermittent failure, determine scope and root cause (-> /investigate -> Stage: Investigating)
+- [ ] **F14.2**: RCA + fix design — add retry logic, fetch timeout (F12), improve error UX (-> /rca-bugfix -> Stage: RCA Complete)
+- [ ] **F14.3**: Implementation plan (-> /plan -> Stage: Planned)
+- [ ] **F14.4**: Implement fix (-> /wrought-rca-fix -> Stage: Implementing -> Resolved)
+- [ ] **F14.5**: Code review (-> /forge-review -> Stage: Reviewed)
+- [ ] **F14.6**: Verify fix (Stage: Verified)
+
+**Recommended approach**: `/rca-bugfix` — root cause confirmed: no retry logic on transient Gemini 500 errors. Fix: (1) add retry-once with 1s backoff on 500/503/429, (2) add AbortSignal.timeout(10000) to all fetch calls (incorporates F12), (3) improve client-side error message.
+
+**Status**: In Progress
+**Stage**: Investigating
+**Resolved in session**: --
+**Verified in session**: --
+**Notes**: Observed during critical mission phase — 94.6% complete, ~11.7h before splashdown. User screenshot shows error on re-entry question. API test confirmed 1-in-3 failure rate. Incorporates F12 (fetch timeout).
+**GitHub Issue**: --
+**Project Item ID**: --
+
+**Lifecycle**:
+| Stage | Timestamp | Session | Artifact |
+|-------|-----------|---------|----------|
+| Open | 2026-04-10 12:25 UTC | 8 | User screenshot — chatbot error on re-entry question |
+| Investigating | 2026-04-10 12:25 UTC | 8 | [Investigation](../investigations/2026-04-10_1225_chatbot_intermittent_api_failure.md) |
+
+---
+
+## F15: Cumulative 31s Worst-Case Latency Across Retry Chain (Medium Debt)
+
+**Summary**: The retry chain in `generateTextResponse()` (`api/chat.ts:150-178`) performs up to 3 sequential HTTP requests (grounded + fallback + transient retry), each with a 10s `AbortSignal.timeout`, plus a 1s sleep. Worst case: 10s + 10s + 1s + 10s = 31s wall-clock before the serverless function responds. This exceeds Vercel Hobby plan's 10s default (fits within Pro plan's 60s). The client-side fetch in `useChat.ts:51` has no timeout.
+
+**Root cause**: F14's retry logic added sequential retries with independent 10s timeouts. No shared time budget across the retry chain. Client-side fetch has no abort signal.
+
+**Resolution tasks**:
+
+- [ ] **F15.1**: RCA + fix — reduce per-request timeout to 5s (total worst-case ~16s), or add client-side `AbortSignal.timeout(20_000)` on fetch in `useChat.ts:51`, or use a shared `AbortController` with a single budget across all retries (-> /rca-bugfix -> Stage: RCA Complete)
+- [ ] **F15.2**: Implement fix (Stage: Implementing -> Resolved)
+- [ ] **F15.3**: Code review (-> /forge-review -> Stage: Reviewed)
+- [ ] **F15.4**: Verify fix (Stage: Verified)
+
+**Recommended approach**: `/rca-bugfix` — root cause is clear (cumulative timeout budget). Suggested: reduce per-request timeout to 5s (total worst-case ~16s), or add a shared `AbortController` with a single budget across all retries.
+
+**Status**: In Progress
+**Stage**: Investigating
+**Resolved in session**: --
+**Verified in session**: --
+**Notes**: Sourced from `/forge-review --scope=diff` W1 for F14 retry implementation. Related to F12 (fetch timeout) and F14 (retry logic). The retry chain introduced in F14 compounds timeout risk. Investigation confirmed finding is real; also identified unbounded Retry-After parsing (429 path can reach 90s).
+**GitHub Issue**: --
+**Project Item ID**: --
+
+**Lifecycle**:
+| Stage | Timestamp | Session | Artifact |
+|-------|-----------|---------|----------|
+| Open | 2026-04-10 12:45 UTC | 8 | [Forge-review W1](../reviews/2026-04-10_1245_diff.md) |
+| Investigating | 2026-04-10 13:00 UTC | 8 | [Investigation](../investigations/2026-04-10_1300_retry_chain_cumulative_latency.md) |
+
+---
+
 ## Changelog
 
 | Date | Session | Action |
@@ -459,6 +525,8 @@ F12 (fetch timeout) is independent of all other findings; affects same file (api
 | 2026-04-06 18:00 UTC | 7 | F13 added: Search grounding response silently discarded. High Defect. `generateTextResponse()` reads only `parts[0].text`, ignores all `groundingMetadata` (sources, citations, search widget). No `sources` ChatPart type exists. Quick answer over-matching intercepts LLM-bound queries. Same pattern as F8/F9. Investigation: docs/investigations/2026-04-06_1800_chatbot_web_search_upgrade.md |
 | 2026-04-06 18:30 UTC | 7 | F13 stage -> RCA Complete. 4 root causes confirmed: (1) response parser discards groundingMetadata, (2) no sources ChatPart/renderer, (3) system prompt doesn't instruct search leverage, (4) quick answer over-matching. 6-requirement fix: parse grounding, add sources UI, upgrade prompt, fix matching. RCA: docs/RCAs/2026-04-06_1800_chatbot_web_search_upgrade.md |
 | 2026-04-06 18:50 UTC | 7 | F13 -> Resolved. /wrought-rca-fix completed in 1 iteration. 7 tasks: (1) sources ChatPart client type, (2) ChatSources.tsx renderer, (3) ChatMessage.tsx wiring, (4) sources ChatPart server type, (5) grounding metadata parser (all text parts + groundingChunks), (6) system prompt RULES upgrade (search instructions, removed sentence limit), (7) quick answer unidirectional matching + 10-char threshold. Build passes, 1697 modules. |
+| 2026-04-10 12:25 UTC | 8 | F14 added: Chatbot intermittent API failure. Gemini `gemini-3-flash-preview` returns 500 errors ~33% of requests. No retry logic. Generic error UX. User screenshot during Return Coast phase (94.6%). Incorporates F12 (fetch timeout). Investigation: docs/investigations/2026-04-10_1225_chatbot_intermittent_api_failure.md |
+| 2026-04-10 12:45 UTC | 8 | F15 added from /forge-review W1 for F14: cumulative 31s worst-case latency across retry chain in `generateTextResponse()`. 3 sequential HTTP requests with 10s timeouts + 1s sleep = 31s. Exceeds Vercel Hobby 10s default. Client-side fetch in `useChat.ts:51` has no timeout. Medium Debt, Open. |
 
 ---
 
@@ -480,3 +548,4 @@ F12 (fetch timeout) is independent of all other findings; affects same file (api
 | src/data/mission-config.ts | F11 (source of truth for NASA-verified milestones) |
 | docs/findings/2026-04-06_1656_fetch_timeout_missing.md | F12 finding report |
 | docs/reviews/2026-04-06_1656_diff.md | Source forge-review for F12 (W1) |
+| docs/investigations/2026-04-10_1225_chatbot_intermittent_api_failure.md | F14 investigation |

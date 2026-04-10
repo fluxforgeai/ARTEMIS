@@ -22,7 +22,7 @@ function detectIntent(text: string): Intent {
 
 // --- Curated Video Lookup (server-side, avoids importing from src/) ---
 
-const CURATED_VIDEOS: Array<{ keywords: string[]; videoId: string; title: string }> = [
+const CURATED_VIDEOS = [
   { keywords: ['launch', 'liftoff', 'takeoff', 'sls'], videoId: '_eeZQw9PBc0', title: 'Artemis II Launches Astronauts to the Moon (Official NASA Recap)' },
   { keywords: ['tli', 'translunar', 'injection', 'burn'], videoId: 'Ke6XX8FHOHM', title: 'Artemis II to the Moon: Launch to Splashdown (Mission Animation)' },
   { keywords: ['crew', 'astronaut', 'wiseman', 'glover', 'koch', 'hansen'], videoId: 'lPyl6d2FJGw', title: 'Meet the Astronauts Who will Fly Around the Moon' },
@@ -30,7 +30,7 @@ const CURATED_VIDEOS: Array<{ keywords: string[]; videoId: string; title: string
   { keywords: ['orion', 'spacecraft'], videoId: '0uWzj4AiiZ8', title: "Artemis II Astronauts' First Look at Their Lunar Spacecraft" },
   { keywords: ['splashdown', 'return', 'reentry'], videoId: 'Vg-EQ7MOu6I', title: 'Around the Moon for All Humanity: Artemis II (Official Launch Trailer)' },
   { keywords: ['artemis', 'program', 'overview', 'mission'], videoId: '7XzhtWcepos', title: 'Artemis II: Mission Overview' },
-];
+] as const;
 
 function findCuratedVideo(query: string): { videoId: string; title: string } | null {
   const lower = query.toLowerCase();
@@ -132,6 +132,10 @@ function hostnameFromUri(uri: string): string {
   try { return new URL(uri).hostname; } catch { return 'Source'; }
 }
 
+function isTransient(status: number): boolean {
+  return status === 429 || status === 500 || status === 503;
+}
+
 async function generateTextResponse(messages: Array<{ role: string; text: string }>, systemPrompt: string, apiKey: string): Promise<ChatPart[]> {
   const baseBody = {
     system_instruction: { parts: [{ text: systemPrompt }] },
@@ -143,20 +147,53 @@ async function generateTextResponse(messages: Array<{ role: string; text: string
   };
   const headers = { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey };
 
+  // Pre-serialize to avoid repeated JSON.stringify on the same object
+  const baseBodyJson = JSON.stringify(baseBody);
+  const groundedBodyJson = JSON.stringify({ ...baseBody, tools: [{ google_search: {} }] });
+
+  // Shared deadline across all retries — caps total I/O at 15s regardless of retry path
+  const deadline = AbortSignal.timeout(15_000);
+
   // Try with search grounding first, fall back without it if the API rejects the tool
   let response = await fetch(GEMINI_TEXT_URL, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ ...baseBody, tools: [{ google_search: {} }] }),
+    body: groundedBodyJson,
+    signal: deadline,
   });
   if (!response.ok) {
+    // Release the unconsumed response body to free the socket
+    await response.body?.cancel();
     // Search grounding may not be available — retry without tools
     response = await fetch(GEMINI_TEXT_URL, {
       method: 'POST',
       headers,
-      body: JSON.stringify(baseBody),
+      body: baseBodyJson,
+      signal: deadline,
     });
-    if (!response.ok) throw new Error(`Gemini text API ${response.status}`);
+    if (!response.ok) {
+      // Retry once on transient server errors (500/503/429)
+      if (isTransient(response.status)) {
+        // Respect Retry-After header for 429; use 1s default for 500/503
+        const retryAfter = response.status === 429
+          ? Math.min(3_000, Math.max(1_000, Number(response.headers.get('retry-after') || '1') * 1_000))
+          : 1_000;
+        await response.body?.cancel();
+        // Skip retry if deadline leaves insufficient time for a meaningful fetch
+        if (deadline.aborted) throw new Error(`Gemini text API ${response.status}`);
+        await new Promise((r) => setTimeout(r, retryAfter));
+        response = await fetch(GEMINI_TEXT_URL, {
+          method: 'POST',
+          headers,
+          body: baseBodyJson,
+          signal: deadline,
+        });
+      }
+      if (!response.ok) {
+        await response.body?.cancel();
+        throw new Error(`Gemini text API ${response.status}`);
+      }
+    }
   }
   const data = await response.json();
 
@@ -204,8 +241,10 @@ async function generateImage(prompt: string, apiKey: string): Promise<ChatPart[]
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) {
+    await res.body?.cancel();
     // Fall back to NASA Image search if Gemini generation fails
     return searchNasaImages(prompt);
   }
@@ -227,8 +266,13 @@ async function searchNasaImages(query: string): Promise<ChatPart[]> {
     .replace(/\s+/g, ' ')
     .trim() || 'artemis II';
   const searchQuery = cleanQuery.toLowerCase().includes('artemis') ? cleanQuery : `artemis II ${cleanQuery}`;
-  const res = await fetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(searchQuery)}&media_type=image&page_size=3`);
-  if (!res.ok) return [{ type: 'text', content: 'Could not search NASA images right now. Try again later.' }];
+  const res = await fetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(searchQuery)}&media_type=image&page_size=3`, {
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!res.ok) {
+    await res.body?.cancel();
+    return [{ type: 'text', content: 'Could not search NASA images right now. Try again later.' }];
+  }
   const data = await res.json();
   const items = data.collection?.items ?? [];
   if (items.length === 0) return [{ type: 'text', content: `No NASA images found for "${searchQuery}". Try a different search term.` }];

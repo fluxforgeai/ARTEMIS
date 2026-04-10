@@ -55,6 +55,7 @@ export function useChat() {
           messages: allMessages,
           userTimezone: USER_TIMEZONE,
         }),
+        signal: AbortSignal.timeout(20_000),
       });
 
       if (!res.ok) {
@@ -79,7 +80,7 @@ export function useChat() {
     } catch {
       const errorMsg: ChatMessage = {
         role: 'assistant',
-        text: 'Sorry, I could not process your question right now. Please try again or use one of the quick-answer buttons.',
+        text: 'The AI service is temporarily unavailable. This usually resolves quickly \u2014 please try your question again.',
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
