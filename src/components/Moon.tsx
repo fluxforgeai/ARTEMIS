@@ -1,23 +1,19 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState } from 'react';
 import { useTexture, Html } from '@react-three/drei';
 import { useMissionStore } from '../store/mission-store';
 import { SCALE_FACTOR } from '../data/mission-config';
-import { getMoonFlybyPosition } from '../data/moon-ephemeris';
 
 export default function Moon() {
   const texture = useTexture('/textures/moon.jpg');
   const [hovered, setHovered] = useState(false);
 
-  // JPL Horizons ephemeris — the real Moon position, not a geometric approximation
-  const flybyPos = useMemo((): [number, number, number] => getMoonFlybyPosition(), []);
+  // Moon position driven by DataDriver at 4Hz via virtual clock
+  const moonPos = useMissionStore((s) => s.moonPosition);
+  const flybyPos: [number, number, number] = moonPos
+    ? [moonPos.x, moonPos.y, moonPos.z]
+    : [0, 0, 0];
 
   const earthDistKm = Math.sqrt(flybyPos[0] ** 2 + flybyPos[1] ** 2 + flybyPos[2] ** 2) * SCALE_FACTOR;
-
-  useEffect(() => {
-    useMissionStore.getState().setMoonPosition({
-      x: flybyPos[0], y: flybyPos[1], z: flybyPos[2],
-    });
-  }, [flybyPos]);
 
   return (
     <group position={flybyPos}>

@@ -9,6 +9,7 @@ export function useDSN() {
     const controller = new AbortController();
 
     async function fetchDSN() {
+      if (useMissionStore.getState().timeControl.mode !== 'live') return;
       try {
         const res = await fetch('/api/dsn', { signal: controller.signal });
         if (!res.ok) return;

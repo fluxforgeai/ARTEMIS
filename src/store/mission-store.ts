@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { StateVector } from '../data/oem-parser';
 import type { DsnStation } from '../data/dsn-parser';
+import { LAUNCH_EPOCH, MISSION_END_EPOCH } from '../data/mission-config';
 
 export interface SpacecraftState {
   x: number;
@@ -31,6 +32,14 @@ export interface Alert {
   autoDismissMs: number;
 }
 
+export type TimeMode = 'live' | 'sim' | 'replay';
+
+export interface TimeControl {
+  mode: TimeMode;
+  rate: number;
+  simEpochMs: number;
+}
+
 export interface SpaceWeatherState {
   kpIndex: number;
   solarWindSpeed: number;
@@ -54,6 +63,7 @@ interface MissionStore {
   hoveredMilestoneHours: number | null;
   spaceWeather: SpaceWeatherState;
   alerts: Alert[];
+  timeControl: TimeControl;
 
   setOemData: (data: StateVector[]) => void;
   setMoonPosition: (pos: { x: number; y: number; z: number }) => void;
@@ -66,6 +76,9 @@ interface MissionStore {
   setSpaceWeather: (data: SpaceWeatherState) => void;
   addAlert: (alert: Omit<Alert, 'id'>) => void;
   dismissAlert: (id: string) => void;
+  setTimeMode: (mode: TimeMode) => void;
+  setPlaybackRate: (rate: number) => void;
+  setSimTime: (epochMs: number) => void;
 }
 
 export const useMissionStore = create<MissionStore>((set) => ({
@@ -93,6 +106,7 @@ export const useMissionStore = create<MissionStore>((set) => ({
     lastUpdated: 0,
   },
   alerts: [],
+  timeControl: { mode: 'live' as TimeMode, rate: 1, simEpochMs: Date.now() },
 
   setOemData: (data) => set({ oemData: data, isLoading: false }),
   setMoonPosition: (pos) => set({ moonPosition: pos }),
@@ -125,4 +139,21 @@ export const useMissionStore = create<MissionStore>((set) => ({
     }),
   dismissAlert: (id) =>
     set((prev) => ({ alerts: prev.alerts.filter((a) => a.id !== id) })),
+  setTimeMode: (mode) =>
+    set((prev) => ({
+      timeControl: {
+        ...prev.timeControl,
+        mode,
+        rate: mode === 'live' ? 1 : mode === 'sim' ? 0 : prev.timeControl.rate,
+      },
+    })),
+  setPlaybackRate: (rate) =>
+    set((prev) => ({ timeControl: { ...prev.timeControl, rate } })),
+  setSimTime: (epochMs) =>
+    set((prev) => ({
+      timeControl: {
+        ...prev.timeControl,
+        simEpochMs: Math.max(LAUNCH_EPOCH.getTime(), Math.min(epochMs, MISSION_END_EPOCH.getTime())),
+      },
+    })),
 }));

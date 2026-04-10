@@ -14,6 +14,20 @@ const DISMISS_MS: Record<AlertSeverity, number> = {
 const firedMilestones = new Set<string>();
 const firedEvents = new Set<string>();
 
+export function clearFiredMilestones() {
+  firedMilestones.clear();
+  firedEvents.clear();
+}
+
+// Clear milestone dedup when time mode changes (subscribe avoids circular store import)
+let _prevMode = useMissionStore.getState().timeControl.mode;
+useMissionStore.subscribe((state) => {
+  if (state.timeControl.mode !== _prevMode) {
+    _prevMode = state.timeControl.mode;
+    clearFiredMilestones();
+  }
+});
+
 function fireAlert(severity: AlertSeverity, type: AlertType, message: string) {
   useMissionStore.getState().addAlert({
     severity,
@@ -68,28 +82,33 @@ export function useAlerts() {
     prevEventCount.current = activeEventCount;
   }, [radiationZone, kpIndex, activeEventCount]);
 
-  // Effect 2: Milestone alerts — own 30s interval, independent of weather (F3)
+  // Effect 2: Milestone alerts — reactive to simEpochMs changes (rate-invariant)
   useEffect(() => {
-    function checkMilestones() {
-      const metHours = (Date.now() - LAUNCH_EPOCH.getTime()) / 3_600_000;
+    const prevMetRef = { current: (useMissionStore.getState().timeControl.simEpochMs - LAUNCH_EPOCH.getTime()) / 3_600_000 };
+
+    const unsub = useMissionStore.subscribe((state) => {
+      const metHours = (state.timeControl.simEpochMs - LAUNCH_EPOCH.getTime()) / 3_600_000;
+      const prevMet = prevMetRef.current;
+      if (metHours === prevMet) return;
+      prevMetRef.current = metHours;
+
       for (const milestone of MILESTONES) {
-        const hoursUntil = milestone.missionElapsedHours - metHours;
+        const mh = milestone.missionElapsedHours;
         const t30Key = `${milestone.name}-t30`;
         const t0Key = `${milestone.name}-t0`;
 
-        if (hoursUntil <= 0.5 && hoursUntil > 0 && !firedMilestones.has(t30Key)) {
+        if (mh - metHours <= 0.5 && mh - metHours > 0 && !firedMilestones.has(t30Key)) {
           firedMilestones.add(t30Key);
           fireAlert('info', 'milestone', `Approaching ${milestone.name} — T-30 minutes`);
         }
-        if (hoursUntil <= 0 && !firedMilestones.has(t0Key)) {
+        // Range-based: milestone crossed since last check (can't skip at any rate)
+        if (mh <= metHours && mh > prevMet && !firedMilestones.has(t0Key)) {
           firedMilestones.add(t0Key);
           fireAlert('info', 'milestone', `${milestone.name} — ${milestone.description}`);
         }
       }
-    }
+    });
 
-    checkMilestones();
-    const interval = setInterval(checkMilestones, 30_000);
-    return () => clearInterval(interval);
+    return unsub;
   }, []);
 }

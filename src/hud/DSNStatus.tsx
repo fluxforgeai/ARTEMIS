@@ -9,6 +9,7 @@ const STATION_NAMES: Record<string, string> = {
 
 export default memo(function DSNStatus() {
   const stations = useMissionStore((s) => s.dsnStations);
+  const timeMode = useMissionStore((s) => s.timeControl.mode);
 
   const stationStatuses = ['gdscc', 'cdscc', 'mdscc'].map((id) => {
     const station = stations.find((s) => s.name === id);
@@ -33,7 +34,7 @@ export default memo(function DSNStatus() {
 
   return (
     <div className="flex items-center gap-2 sm:gap-3">
-      <span className="text-[10px] uppercase tracking-wider text-gray-400">DSN</span>
+      <span className="text-[10px] uppercase tracking-wider text-gray-400">DSN{timeMode !== 'live' ? ' (SIM)' : ''}</span>
       {/* Mobile: compact summary */}
       <div className="sm:hidden flex items-center gap-1.5">
         <div className={`w-2 h-2 rounded-full ${anyActive ? 'bg-[#00ff88] shadow-[0_0_6px_rgba(0,255,136,0.5)]' : 'bg-gray-600'}`} />

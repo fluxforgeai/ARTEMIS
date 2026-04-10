@@ -10,7 +10,7 @@ export function useSpaceWeather() {
   useEffect(() => {
     function update() {
       const { spacecraft, spaceWeather, setSpaceWeather } = useMissionStore.getState();
-      const metMs = Date.now() - LAUNCH_EPOCH.getTime();
+      const metMs = useMissionStore.getState().timeControl.simEpochMs - LAUNCH_EPOCH.getTime();
       const earthDistKm = spacecraft.earthDist;
 
       const data = generateSpaceWeather(metMs, earthDistKm);

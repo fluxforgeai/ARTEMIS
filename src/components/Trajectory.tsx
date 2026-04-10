@@ -54,13 +54,16 @@ function splitAroundBodies(
 export default function Trajectory() {
   const oemData = useMissionStore((s) => s.oemData);
   const moonPosition = useMissionStore((s) => s.moonPosition);
+  const simEpochMs = useMissionStore((s) => s.timeControl.simEpochMs);
+  // Quantize to nearest minute — trajectory split only changes every ~4 min (OEM vector spacing)
+  const quantizedMs = Math.floor(simEpochMs / 60_000) * 60_000;
 
   const { pastSegments, futureSegments } = useMemo(() => {
     if (!oemData || oemData.length === 0) {
       return { pastSegments: [] as Point3[][], futureSegments: [] as Point3[][] };
     }
 
-    const now = Date.now();
+    const now = quantizedMs;
     const past: Point3[] = [];
     const future: Point3[] = [];
 
@@ -90,7 +93,7 @@ export default function Trajectory() {
       pastSegments: splitAroundBodies(past, moonPos),
       futureSegments: splitAroundBodies(future, moonPos),
     };
-  }, [oemData, moonPosition]);
+  }, [oemData, moonPosition, quantizedMs]);
 
   return (
     <group>

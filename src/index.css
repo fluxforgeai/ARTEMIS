@@ -50,3 +50,31 @@ body {
   0%, 100% { box-shadow: 0 0 8px rgba(255, 68, 68, 0.3); }
   50% { box-shadow: 0 0 16px rgba(255, 68, 68, 0.6); }
 }
+
+/* TimeControls scrubber */
+.time-scrubber {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.time-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-hud-blue);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0, 212, 255, 0.5);
+}
+.time-scrubber::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-hud-blue);
+  cursor: pointer;
+  border: none;
+}

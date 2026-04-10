@@ -9,8 +9,10 @@ import CameraControls from './CameraControls';
 import CrewPanel from './CrewPanel';
 import MissionEventsPanel from './MissionEventsPanel';
 import SpaceWeatherPanel from './SpaceWeatherPanel';
+import TimeControls from './TimeControls';
 import { useSpaceWeather } from '../hooks/useSpaceWeather';
 import { useAlerts } from '../hooks/useAlerts';
+import { useTimeControlInit } from '../hooks/useTimeControlInit';
 
 function WeatherAlertDriver() {
   useSpaceWeather();
@@ -34,6 +36,7 @@ const MoonDistCard = memo(function MoonDistCard() {
 });
 
 export default function HUD() {
+  useTimeControlInit();
   const [crewOpen, setCrewOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const handleCrewClose = useCallback(() => setCrewOpen(false), []);
@@ -75,6 +78,11 @@ export default function HUD() {
           <DSNStatus />
           <SpaceWeatherPanel />
           <CameraControls />
+        </div>
+
+        {/* Time controls — always visible */}
+        <div className="pointer-events-auto">
+          <TimeControls />
         </div>
 
         {/* Mobile "More" expandable section */}
